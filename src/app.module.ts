@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@infrastructure/database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from '@features/healthCheck/health.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({

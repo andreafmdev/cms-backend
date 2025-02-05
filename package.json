@@ -18,10 +18,14 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typeorm": "typeorm-ts-node-esm",
-    "migration:generate": "typeorm migration:generate -- -n",
-    "migration:run": "typeorm migration:run",
-    "migration:revert": "typeorm migration:revert"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "schema:sync": "npm run typeorm schema:sync -- -d  src/infrastructure/datasource/data-source.ts",
+    "typeorm:cache": "npm run typeorm cache:clear -- -d  src/infrastructure/datasource/data-source.ts",
+    "schema:drop": "npm run typeorm schema:drop -- -d  src/infrastructure/datasource/data-source.ts",
+    "migration:create": "node -e \"if (!process.env.npm_config_migrationName) { console.error('❌ Missing migrationName. Use --migrationName=<name>'); process.exit(1); } require('child_process').execSync(`npx typeorm migration:create ./src/infrastructure/database/migrations/${process.env.npm_config_migrationName}`, { stdio: 'inherit' })\"",
+    "migration:generate": "node -e \"require('child_process').execSync(`npm run typeorm migration:generate -- -d ./src/infrastructure/datasource/data-source.ts ./src/infrastructure/database/migrations/${process.env.npm_config_migrationName} `, { stdio: 'inherit' })\"",
+    "migration:run": "npm run typeorm  migration:run -- -d ./src/infrastructure/datasource/data-source.ts",
+    "migration:revert": "npm run typeorm  migration:revert -- -d ./src/infrastructure/datasource/data-source.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -48,6 +52,7 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
