@@ -1,6 +1,5 @@
 // src/core/domain/interfaces/user-repository.interface.ts
-import { User } from '../domain/user.entity';
-
+import { User } from '@module/users/infrastructure/entities/user.orm-entity';
 export interface IUserRepository {
   findAll(): Promise<User[]>;
   findById(id: number): Promise<User | null>;

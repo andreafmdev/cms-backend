@@ -11,6 +11,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
+
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
@@ -18,13 +19,18 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@core/*": ["src/core/*"],
-      "@features/*": ["src/features/*"],
+      "@module/*": ["src/modules/*"],
       "@infrastructure/*": ["src/infrastructure/*"],
       "@shared/*": ["src/shared/*"],
-      "@config/*": ["src/config/*"]
+      "@config/*": ["src/config/*"],
+      "@userModule/*": ["src/modules/users/*"],
+      "@productModule/*": ["src/modules/products/*"],
+      "@authModule/*": ["src/modules/auth/*"],
+      "@healthModule/*": ["src/modules/healthCheck/*"],
+      
     }
   },
+
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
