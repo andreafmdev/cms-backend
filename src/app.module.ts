@@ -10,8 +10,8 @@ import { UsersModule } from '@module/users/users.module';
       envFilePath: '.env', // Percorso del file .env (nello stesso livello di app.module.ts)
     }),
     DatabaseModule,
-    HealthModule,
     UsersModule,
+    HealthModule,
   ], // Importa DatabaseModule
 })
 export class AppModule {}

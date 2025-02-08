@@ -1,4 +1,3 @@
-import { UsersModule } from '@module/users/users.module';
 //TYPEORM CONFIG
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';

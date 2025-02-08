@@ -1,8 +1,8 @@
 // src/infrastructure/datasource/typeorm.module.ts
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import PostGresDataSource from './data-source';
-
+@Global()
 @Module({
   providers: [
     {
@@ -16,7 +16,7 @@ import PostGresDataSource from './data-source';
           return PostGresDataSource;
         } catch (error) {
           console.error('❌ Error connecting to the database:', error);
-          throw error;
+          throw new Error('❌ Unable to initialize database connection');
         }
       },
     },
