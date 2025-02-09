@@ -8,14 +8,15 @@ import { PermissionOrmEntity } from '@module/users/infrastructure/entities/permi
 import { SeederOptions } from 'typeorm-extension';
 import UserSeeder from '@userModule/infrastructure/seeds/user.seed';
 import UserFactory from '@userModule/infrastructure/factories/user.factory';
-import GroupFactory from '@userModule/infrastructure/factories/group.factory';
-import PermissionFactory from '@userModule/infrastructure/factories/permission.factory';
+import UserDetailFactory from '@userModule/infrastructure/factories/user-details.factory';
+import { UserDetailOrmEntity } from '@module/users/infrastructure/entities/user-detail.orm-entity';
 
 const options: SeederOptions = {
   seeds: [UserSeeder], // ✅ Path per i seed
-  factories: [UserFactory, GroupFactory, PermissionFactory], // ✅ Path per le factory
+  factories: [UserFactory, UserDetailFactory], // ✅ Path per le factory
 };
 dotenv.config();
+
 const PostGresDataSource = new DataSource({
   ...options,
   type: 'postgres',
@@ -25,7 +26,12 @@ const PostGresDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'password',
   database: process.env.DB_NAME || 'my_database',
   // ✅ Percorso corretto per le entità
-  entities: [UserOrmEntity, GroupOrmEntity, PermissionOrmEntity], // ✅ Carica solo ORM Entities
+  entities: [
+    UserOrmEntity,
+    UserDetailOrmEntity,
+    GroupOrmEntity,
+    PermissionOrmEntity,
+  ], // ✅ Carica solo ORM Entities
 
   // ✅ Percorso corretto per le migrazioni
   migrations: [path.join(__dirname, '../database/migrations/*.{ts,js}')],

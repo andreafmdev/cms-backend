@@ -8,6 +8,7 @@ import { UserRepository } from '@userModule/infrastructure/repositories/user.rep
 import { DatabaseModule } from '@infrastructure/database/database.module';
 import { UsersController } from './user.controller';
 import { UserService } from './application/user.service';
+import { UserDetailOrmEntity } from './infrastructure/entities/user-detail.orm-entity';
 @Module({
   imports: [
     DatabaseModule, // ✅ Usa il modulo centrale
@@ -15,6 +16,7 @@ import { UserService } from './application/user.service';
       UserOrmEntity,
       GroupOrmEntity,
       PermissionOrmEntity,
+      UserDetailOrmEntity,
     ]),
   ],
 
