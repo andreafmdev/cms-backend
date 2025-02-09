@@ -1,55 +1,47 @@
-import { DataSource, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { UserOrmEntity } from '../entities/user.orm-entity';
 import { IUserRepository } from '@userModule/domain/repositories/user-repository';
-import { User } from '@userModule/domain/entities/User';
+import { UserOrmEntity } from '@userModule/infrastructure/entities/user.orm-entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '@module/users/domain/entities/User';
+import { Uuid } from '@shared/value-object/uuid.vo';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
-  private userRepository: Repository<UserOrmEntity>;
-
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource, // ✅ Iniettato direttamente
-  ) {
-    this.userRepository = this.dataSource.getRepository(UserOrmEntity);
+    @InjectRepository(UserOrmEntity)
+    private readonly userRepository: Repository<UserOrmEntity>,
+  ) {}
+  findById(id: number): Promise<User | null> {
+    throw new Error('Method not implemented.');
   }
-
-  async findById(id: number): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { id } });
-    return user ? new User(user.username, user.email, user.password) : null;
+  create(user: User): Promise<User> {
+    throw new Error('Method not implemented.');
   }
-
-  async findByEmail(email: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { email } });
-    return user ? new User(user.username, user.email, user.password) : null;
+  update(user: User): Promise<User> {
+    throw new Error('Method not implemented.');
   }
-
-  async create(user: User): Promise<User> {
-    const ormUser = this.userRepository.create({
-      username: user.username,
-      email: user.email,
-      password: user.password,
-    });
-    const savedUser = await this.userRepository.save(ormUser);
-    return new User(savedUser.username, savedUser.email, savedUser.password);
-  }
-
-  async update(user: User): Promise<User> {
-    await this.userRepository.update(user.id.toString(), {
-      username: user.username,
-      email: user.email,
-      password: user.password,
-    });
-    return user;
-  }
-
-  async delete(id: number): Promise<void> {
-    await this.userRepository.delete(id);
+  delete(id: number): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async findAll(): Promise<User[]> {
     const users = await this.userRepository.find();
-    return users.map((u) => new User(u.username, u.email, u.password));
+    return users.map(
+      (user) => new User(new Uuid(user.id), user.username, user.email, '', []),
+    );
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) return null;
+
+    return new User(
+      new Uuid(user.id),
+      user.username,
+      user.email,
+      user.password,
+      [],
+    );
   }
 }

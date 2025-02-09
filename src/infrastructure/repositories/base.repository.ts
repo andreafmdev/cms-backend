@@ -9,9 +9,9 @@ import {
   FindOptionsWhere,
 } from 'typeorm';
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
-import { UniqueId } from '@shared/value-object/unique-id.vo';
 import { DatabaseException } from '@shared/exceptions/database.exception';
 import { NotFoundException } from '@nestjs/common';
+import { Uuid } from '@shared/value-object/uuid.vo';
 
 export abstract class BaseRepository<T extends ObjectLiteral>
   implements IBaseRepository<T>
@@ -46,10 +46,10 @@ export abstract class BaseRepository<T extends ObjectLiteral>
     }
   }
 
-  async findOneById(id: UniqueId): Promise<T> {
+  async findOneById(id: Uuid): Promise<T> {
     try {
       const result = await this.repository.findOne({
-        where: { id: id.toString() } as unknown as FindOptionsWhere<T>,
+        where: { id } as unknown as FindOptionsWhere<T>,
       });
 
       if (!result) {

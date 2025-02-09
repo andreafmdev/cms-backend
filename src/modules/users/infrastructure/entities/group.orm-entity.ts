@@ -1,28 +1,12 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  JoinTable,
-  UpdateDateColumn,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToMany, JoinTable } from 'typeorm';
 import { UserOrmEntity } from './user.orm-entity';
 import { PermissionOrmEntity } from './permission.orm-entity';
+import { BaseOrmEntity } from '@shared/infrastructure/entities/base.orm';
 
 @Entity('groups') // Table name for groups
-export class GroupOrmEntity {
-  @PrimaryGeneratedColumn()
-  id!: number; // Unique identifier for the group
-
+export class GroupOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   name!: string; // Name of the group (must be unique)
-
-  @CreateDateColumn()
-  createdAt?: Date;
-
-  @UpdateDateColumn()
-  updatedAt?: Date;
 
   @ManyToMany(() => UserOrmEntity, (user) => user.groups)
   users!: UserOrmEntity[]; // Users associated with this group

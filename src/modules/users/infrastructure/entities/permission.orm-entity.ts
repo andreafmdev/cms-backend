@@ -1,12 +1,10 @@
 // src/features/users/infrastructure/entities/permission.orm-entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Entity, Column, ManyToMany } from 'typeorm';
 import { GroupOrmEntity } from './group.orm-entity';
+import { BaseOrmEntity } from '@shared/infrastructure/entities/base.orm';
 
 @Entity('permissions') // Nome tabella
-export class PermissionOrmEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
+export class PermissionOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   name!: string;
 

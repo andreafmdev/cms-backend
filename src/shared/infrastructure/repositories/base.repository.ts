@@ -7,8 +7,8 @@ import {
   ObjectLiteral,
 } from 'typeorm';
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
-import { UniqueId } from '@shared/value-object/unique-id.vo';
 import { NotFoundException } from '@nestjs/common';
+import { Uuid } from '@shared/value-object/uuid.vo';
 
 export abstract class BaseAbstractRepostitory<T extends ObjectLiteral>
   implements IBaseRepository<T>
@@ -34,7 +34,7 @@ export abstract class BaseAbstractRepostitory<T extends ObjectLiteral>
     return this.entity.create(data);
   }
 
-  public async findOneById(id: UniqueId): Promise<T> {
+  public async findOneById(id: Uuid): Promise<T> {
     const options: FindOptionsWhere<T> = {
       id: id.toString(),
     } as unknown as FindOptionsWhere<T>;

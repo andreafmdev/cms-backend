@@ -1,19 +1,20 @@
-import { UniqueId } from '@shared/value-object/unique-id.vo';
 import { Role } from './Role';
+import { Uuid } from '@shared/value-object/uuid.vo';
 
 export class User {
-  private readonly id: UniqueId;
+  private readonly id: Uuid;
   private username: string;
   private email: string;
   private password: string;
   private roles: string[];
 
   constructor(
-    id: UniqueId,
+    id: Uuid,
     username: string,
     email: string,
     password: string,
     roles: string[] = [],
+    //?: date handled by typeorm
   ) {
     this.id = id;
     this.username = username;
@@ -21,10 +22,18 @@ export class User {
     this.password = password;
     this.roles = roles;
   }
-  getId(): UniqueId {
+
+  getId(): Uuid {
     return this.id;
   }
 
+  getUsername(): string {
+    return this.username;
+  }
+
+  getEmail(): string {
+    return this.email;
+  }
   hasRole(role: string): boolean {
     return this.roles.includes(role);
   }

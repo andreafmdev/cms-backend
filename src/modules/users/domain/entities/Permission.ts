@@ -1,15 +1,15 @@
-import { UniqueId } from '@shared/value-object/unique-id.vo';
+import { Uuid } from '@shared/value-object/uuid.vo';
 
 export class Permission {
-  private readonly id: UniqueId;
+  private readonly id: Uuid;
   private readonly name: string;
 
-  constructor(id: UniqueId, name: string) {
+  constructor(id: Uuid, name: string) {
     this.id = id;
     this.name = name;
   }
 
-  getId(): UniqueId {
+  getId(): Uuid {
     return this.id;
   }
 
