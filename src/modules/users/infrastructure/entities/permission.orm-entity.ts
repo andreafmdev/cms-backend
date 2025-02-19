@@ -1,7 +1,7 @@
 // src/features/users/infrastructure/entities/permission.orm-entity.ts
 import { Entity, Column, ManyToMany } from 'typeorm';
 import { GroupOrmEntity } from './group.orm-entity';
-import { BaseOrmEntity } from '@shared/infrastructure/entities/base.orm';
+import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
 
 @Entity('permissions') // Nome tabella
 export class PermissionOrmEntity extends BaseOrmEntity {

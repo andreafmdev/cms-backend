@@ -5,7 +5,7 @@ import { UserOrmEntity } from '@userModule/infrastructure/entities/user.orm-enti
 import { GroupOrmEntity } from '@userModule/infrastructure/entities/group.orm-entity';
 import { PermissionOrmEntity } from '@userModule/infrastructure/entities/permission.orm-entity';
 import { UserRepository } from '@userModule/infrastructure/repositories/user.repository';
-import { DatabaseModule } from '@infrastructure/database/database.module';
+import { DatabaseModule } from '@base/infrastructure/database/database.module';
 import { UsersController } from './user.controller';
 import { UserDetailOrmEntity } from '@userModule/infrastructure/entities/user-detail.orm-entity';
 import { CqrsModule } from '@nestjs/cqrs';

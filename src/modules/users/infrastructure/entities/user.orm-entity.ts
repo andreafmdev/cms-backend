@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { GroupOrmEntity } from './group.orm-entity';
 import * as bcrypt from 'bcrypt';
-import { BaseOrmEntity } from '@shared/infrastructure/entities/base.orm';
+import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
 import { UserDetailOrmEntity } from './user-detail.orm-entity';
 @Entity('users') // Table name
 export class UserOrmEntity extends BaseOrmEntity {

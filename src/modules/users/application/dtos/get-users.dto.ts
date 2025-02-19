@@ -27,7 +27,6 @@ export class UserDetailDto {
   biography: string;
 }
 export class GetUsersQueryResult {
-  @Expose()
   id: string;
 
   @Expose()
@@ -36,7 +35,6 @@ export class GetUsersQueryResult {
   @Expose()
   email: string;
 
-  @Expose()
   @Type(() => GroupDto)
   groups: GroupDto[];
 

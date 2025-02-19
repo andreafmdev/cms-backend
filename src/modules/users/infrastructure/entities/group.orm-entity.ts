@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToMany, JoinTable } from 'typeorm';
 import { UserOrmEntity } from './user.orm-entity';
 import { PermissionOrmEntity } from './permission.orm-entity';
-import { BaseOrmEntity } from '@shared/infrastructure/entities/base.orm';
+import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
 
 @Entity('groups') // Table name for groups
 export class GroupOrmEntity extends BaseOrmEntity {

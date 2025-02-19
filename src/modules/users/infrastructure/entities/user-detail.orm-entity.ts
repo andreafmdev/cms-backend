@@ -1,5 +1,5 @@
 import { Entity, Column } from 'typeorm';
-import { BaseOrmEntity } from '@shared/infrastructure/entities/base.orm';
+import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
 
 @Entity('user_details') // Table name
 export class UserDetailOrmEntity extends BaseOrmEntity {

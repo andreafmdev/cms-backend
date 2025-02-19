@@ -1,7 +1,7 @@
 // src/infrastructure/datasource/typeorm.module.ts
 import { Module, Global } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import PostGresDataSource from './data-source';
+import PostGresDataSource from '../datasource/data-source';
 @Global()
 @Module({
   providers: [
