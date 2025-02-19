@@ -13,6 +13,7 @@ export class GroupOrmEntity extends BaseOrmEntity {
 
   @ManyToMany(() => PermissionOrmEntity, (permission) => permission.groups, {
     cascade: true, // Automatically propagate changes to related permissions
+    eager: true,
   })
   @JoinTable({ name: 'group_permissions' }) // Join table for group-permission relationships
   permissions!: PermissionOrmEntity[]; // Permissions associated with this group

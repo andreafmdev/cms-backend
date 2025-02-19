@@ -1,50 +1,132 @@
-import { Role } from './Role';
-import { Uuid } from '@shared/value-object/uuid.vo';
+import { Uuid, UuidGenerator } from '@shared/value-object/uuid.vo';
+import { Group } from './Group';
+import { UserDetail } from './UserDetail';
 
 export class User {
   private readonly id: Uuid;
-  private username: string;
-  private email: string;
+  private readonly username: string;
+  private readonly email: string;
   private password: string;
-  private roles: string[];
+  private readonly groups: Group[];
+  private readonly details: UserDetail;
 
-  constructor(
+  /**
+   * private constructor: Forces the use of `create()`.
+   */
+  private constructor(
     id: Uuid,
     username: string,
     email: string,
     password: string,
-    roles: string[] = [],
-    //?: date handled by typeorm
+    groups: Group[] = [],
+    details: UserDetail,
   ) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
-    this.roles = roles;
+    this.groups = [...groups];
+    this.details = details;
   }
 
+  /**
+   * Factory method to create a new user with a generated ID.
+   */
+  static create(
+    username: string,
+    email: string,
+    password: string,
+    groups: Group[] = [],
+    details: UserDetail,
+  ): User {
+    return new User(
+      UuidGenerator.generate(),
+      username,
+      email,
+      password,
+      groups,
+      details,
+    );
+  }
+
+  /** Returns the user ID. */
   getId(): Uuid {
     return this.id;
   }
 
+  /** Returns the username. */
   getUsername(): string {
     return this.username;
   }
 
+  /** Returns the email. */
   getEmail(): string {
     return this.email;
   }
-  hasRole(role: string): boolean {
-    return this.roles.includes(role);
+
+  /** Returns the groups the user belongs to (defensive copy). */
+  getGroups(): Group[] {
+    return [...this.groups];
   }
 
-  addRole(role: Role): void {
-    if (!this.hasRole(role.getName())) {
-      this.roles.push(role.getName());
+  /**
+   * Checks if the user has a given permission.
+   */
+  hasPermission(permission: string): boolean {
+    return this.groups.some((group) => group.hasPermission(permission));
+  }
+
+  /**
+   * Returns a new user instance with an added group (immutability).
+   */
+  withAddedGroup(group: Group): User {
+    if (this.groups.some((g) => g.getName() === group.getName())) {
+      return this; // No modification needed
     }
+    return new User(
+      this.id,
+      this.username,
+      this.email,
+      this.password,
+      [...this.groups, group],
+      this.details,
+    );
   }
 
-  removeRole(roleName: string): void {
-    this.roles = this.roles.filter((role) => role !== roleName);
+  /**
+   * Returns a new user instance with a removed group (immutability).
+   */
+  withRemovedGroup(groupName: string): User {
+    return new User(
+      this.id,
+      this.username,
+      this.email,
+      this.password,
+      this.groups.filter((group) => group.getName() !== groupName),
+      this.details,
+    );
+  }
+
+  withUpdatedPassword(newPassword: string): User {
+    return new User(
+      this.id,
+      this.username,
+      this.email,
+      newPassword,
+      this.groups,
+      this.details,
+    );
+  }
+
+  /*Utility methods*/
+  static createWithId(
+    id: Uuid,
+    username: string,
+    email: string,
+    password: string,
+    groups: Group[] = [],
+    details: UserDetail,
+  ): User {
+    return new User(id, username, email, password, groups, details);
   }
 }

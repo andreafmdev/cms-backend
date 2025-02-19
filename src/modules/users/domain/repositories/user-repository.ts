@@ -1,10 +1,7 @@
-import { User } from '@module/users/domain/entities/User';
+import { UserOrmEntity } from '@module/users/infrastructure/entities/user.orm-entity';
+import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 
-export interface IUserRepository {
-  findById(id: number): Promise<User | null>;
-  findByEmail(email: string): Promise<User | null>;
-  create(user: User): Promise<User>;
-  update(user: User): Promise<User>;
-  delete(id: number): Promise<void>;
-  findAll(): Promise<User[]>;
+export interface IUserRepository extends IBaseRepository<UserOrmEntity> {
+  findById(id: string): Promise<UserOrmEntity | null>;
+  findAll(): Promise<UserOrmEntity[]>;
 }

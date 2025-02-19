@@ -2,46 +2,37 @@ import { Injectable } from '@nestjs/common';
 import { IUserRepository } from '@userModule/domain/repositories/user-repository';
 import { UserOrmEntity } from '@userModule/infrastructure/entities/user.orm-entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '@module/users/domain/entities/User';
-import { Uuid } from '@shared/value-object/uuid.vo';
+import { getMetadataArgsStorage, Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
+  private readonly baseRelations: string[] = [
+    'groups',
+    'details',
+    'permissions',
+  ];
   constructor(
     @InjectRepository(UserOrmEntity)
     private readonly userRepository: Repository<UserOrmEntity>,
   ) {}
-  findById(id: number): Promise<User | null> {
-    throw new Error('Method not implemented.');
-  }
-  create(user: User): Promise<User> {
-    throw new Error('Method not implemented.');
-  }
-  update(user: User): Promise<User> {
-    throw new Error('Method not implemented.');
-  }
-  delete(id: number): Promise<void> {
-    throw new Error('Method not implemented.');
+  async findById(id: string): Promise<UserOrmEntity | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
+    return user ? plainToInstance(UserOrmEntity, user) : null;
   }
 
-  async findAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
-    return users.map(
-      (user) => new User(new Uuid(user.id), user.username, user.email, '', []),
-    );
+  async findAll(): Promise<UserOrmEntity[]> {
+    const users = await this.userRepository.find({});
+    return users;
   }
-
-  async findByEmail(email: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { email } });
-    if (!user) return null;
-
-    return new User(
-      new Uuid(user.id),
-      user.username,
-      user.email,
-      user.password,
-      [],
-    );
+  /**
+   * Recupera automaticamente tutte le relazioni dichiarate nell'entità TypeORM.
+   */
+  private getRelations(entity: any): string[] {
+    return getMetadataArgsStorage()
+      .relations.filter((relation) => relation.target === entity)
+      .map((relation) => relation.propertyName);
   }
 }

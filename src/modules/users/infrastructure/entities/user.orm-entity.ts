@@ -23,7 +23,9 @@ export class UserOrmEntity extends BaseOrmEntity {
   @Column()
   password!: string;
 
-  @ManyToMany(() => GroupOrmEntity, (group) => group.users)
+  @ManyToMany(() => GroupOrmEntity, (group) => group.users, {
+    eager: true,
+  })
   @JoinTable({ name: 'user_groups' }) // Join table for user-group relationships
   groups!: GroupOrmEntity[];
 

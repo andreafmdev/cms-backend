@@ -13,7 +13,7 @@ import { Uuid } from '@shared/value-object/uuid.vo';
 export abstract class BaseAbstractRepostitory<T extends ObjectLiteral>
   implements IBaseRepository<T>
 {
-  private entity: Repository<T>;
+  protected readonly entity: Repository<T>;
   protected constructor(entity: Repository<T>) {
     this.entity = entity;
   }

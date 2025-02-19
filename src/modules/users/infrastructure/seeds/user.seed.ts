@@ -47,19 +47,15 @@ export default class UserSeeder implements Seeder {
       console.log('⚙️ Creazione degli utenti con gruppi...');
       const users = await Promise.all(
         Array.from({ length: 5 }).map(async () => {
-          // Crea l'utente utilizzando la factory
-          const user = await userFactory.make();
-          user.groups = faker.helpers.arrayElements(updatedGroups, 1); // Assegna 1 gruppo casuale
-
-          // Salva l'utente
+          //CREATE USER DETAIL
           const userDetails = await userDetailFactory.make();
 
-          const savedUser = await userRepository.save(user);
-          savedUser.details = userDetails;
-          // Crea UserDetail associato
+          const user = await userFactory.make();
+          user.groups = faker.helpers.arrayElements(updatedGroups, 1); // Assegna 1 gruppo casuale
+          user.details = userDetails;
+          // Salva l'utente
           await userDetailRepository.save(userDetails);
-
-          return savedUser;
+          return await userRepository.save(user);
         }),
       );
       console.log(`✅ ${users.length} utenti creati.`);

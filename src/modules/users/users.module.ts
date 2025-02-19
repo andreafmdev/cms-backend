@@ -7,11 +7,15 @@ import { PermissionOrmEntity } from '@userModule/infrastructure/entities/permiss
 import { UserRepository } from '@userModule/infrastructure/repositories/user.repository';
 import { DatabaseModule } from '@infrastructure/database/database.module';
 import { UsersController } from './user.controller';
-import { UserService } from './application/user.service';
-import { UserDetailOrmEntity } from './infrastructure/entities/user-detail.orm-entity';
+import { UserDetailOrmEntity } from '@userModule/infrastructure/entities/user-detail.orm-entity';
+import { CqrsModule } from '@nestjs/cqrs';
+import { GetUsersHandler } from '@userModule/application/handlers/get-users.handler';
+import { UserMapper } from '@userModule/application/mapper/user-mapper';
 @Module({
   imports: [
+    CqrsModule,
     DatabaseModule, // ✅ Usa il modulo centrale
+
     TypeOrmModule.forFeature([
       UserOrmEntity,
       GroupOrmEntity,
@@ -21,7 +25,7 @@ import { UserDetailOrmEntity } from './infrastructure/entities/user-detail.orm-e
   ],
 
   controllers: [UsersController],
-  providers: [UserRepository, UserService], // ✅ Registra il repository
-  exports: [UserRepository], // ✅ Esporta il repository per altri moduli
+  providers: [UserRepository, GetUsersHandler, UserMapper], // ✅ Registra il repository
+  exports: [], // ✅ Esporta il repository per altri moduli
 })
 export class UsersModule {}
