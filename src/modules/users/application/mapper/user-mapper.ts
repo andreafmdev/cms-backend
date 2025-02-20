@@ -5,6 +5,8 @@ import { Uuid } from '@shared/value-object/uuid.vo';
 import { Group } from '@module/users/domain/entities/Group';
 import { Permission } from '@module/users/domain/entities/Permission';
 import { UserDetail } from '@module/users/domain/entities/UserDetail';
+import { Injectable } from '@nestjs/common';
+@Injectable()
 export class UserMapper extends AutoMapper<UserOrmEntity, User> {
   constructor() {
     super(

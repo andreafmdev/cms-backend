@@ -1,31 +1,35 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { FastifyReply } from 'fastify';
 
-@Catch(HttpException)
+@Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const status = exception.getStatus();
-    const responseObj = exception.getResponse();
+    const response = ctx.getResponse<FastifyReply>();
+    const request = ctx.getRequest<Request>();
+
+    // Controlla se l'eccezione è di tipo HttpException
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const message =
-      typeof responseObj === 'string'
-        ? responseObj
-        : (responseObj as { message: string }).message;
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : 'Internal server error';
 
-    console.error(`[Exception] ${exception.constructor.name}: ${message}`);
-
-    response.status(status).json({
+    response.status(status).send({
       statusCode: status,
       message,
       timestamp: new Date().toISOString(),
-      error: exception.constructor.name,
+      path: request.url,
     });
   }
 }

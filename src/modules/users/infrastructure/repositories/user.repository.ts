@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IUserRepository } from '@userModule/domain/repositories/user-repository';
 import { UserOrmEntity } from '@userModule/infrastructure/entities/user.orm-entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getMetadataArgsStorage, Repository } from 'typeorm';
-import { plainToInstance } from 'class-transformer';
+import { FindOneOptions, getMetadataArgsStorage, Repository } from 'typeorm';
+import { BaseRepository } from '@base/infrastructure/repositories/base.repository';
+import { Uuid } from '@shared/value-object/uuid.vo';
 
 @Injectable()
-export class UserRepository implements IUserRepository {
+export class UserRepository
+  extends BaseRepository<UserOrmEntity>
+  implements IUserRepository
+{
   private readonly baseRelations: string[] = [
     'groups',
     'details',
@@ -15,18 +19,17 @@ export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(UserOrmEntity)
     private readonly userRepository: Repository<UserOrmEntity>,
-  ) {}
-  async findById(id: string): Promise<UserOrmEntity | null> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-    });
-    return user ? plainToInstance(UserOrmEntity, user) : null;
+  ) {
+    super(userRepository);
+  }
+  async findById(id: string): Promise<UserOrmEntity> {
+    const user = await this.findOneById(Uuid.fromString(id));
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
-  async findAll(): Promise<UserOrmEntity[]> {
-    const users = await this.userRepository.find({});
-    return users;
-  }
   /**
    * Recupera automaticamente tutte le relazioni dichiarate nell'entità TypeORM.
    */
@@ -34,5 +37,14 @@ export class UserRepository implements IUserRepository {
     return getMetadataArgsStorage()
       .relations.filter((relation) => relation.target === entity)
       .map((relation) => relation.propertyName);
+  }
+  async findByCondition(
+    condition: FindOneOptions<UserOrmEntity>,
+  ): Promise<UserOrmEntity> {
+    const result = await this.userRepository.findOne(condition);
+    if (!result) {
+      throw new NotFoundException('Entity not found');
+    }
+    return result;
   }
 }

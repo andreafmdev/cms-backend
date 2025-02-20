@@ -18,14 +18,14 @@ export class User {
     username: string,
     email: string,
     password: string,
-    groups: Group[] = [],
+    groups: Group[],
     details: UserDetail,
   ) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
-    this.groups = [...groups];
+    this.groups = groups;
     this.details = details;
   }
 
@@ -37,15 +37,15 @@ export class User {
     email: string,
     password: string,
     groups: Group[] = [],
-    details: UserDetail,
+    details?: UserDetail | null,
   ): User {
     return new User(
       UuidGenerator.generate(),
       username,
       email,
       password,
-      groups,
-      details,
+      groups && groups.length > 0 ? [...groups] : [Group.createDefault()],
+      details ?? UserDetail.createDefault(),
     );
   }
 

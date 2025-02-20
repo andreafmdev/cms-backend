@@ -59,6 +59,9 @@ export class UserDetail {
       biography,
     );
   }
+  static createDefault(): UserDetail {
+    return this.create();
+  }
   getAddress(): string | undefined {
     return this.address;
   }

@@ -8,11 +8,13 @@ import {
 import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
 import { LoggerMiddleware } from '@shared/middleware/logger.middleware';
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
+    { bufferLogs: true },
   );
 
   // ✅ Fastify adapter registration
@@ -22,6 +24,7 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionsFilter());
 
   // ✅ Implementa il middleware correttamente per Fastify
+  app.useLogger(app.get(Logger));
   app
     .getHttpAdapter()
     .getInstance()
@@ -29,6 +32,7 @@ async function bootstrap() {
       const logger = new LoggerMiddleware();
       logger.use(req, res, () => {});
     });
+
   await app.listen(process.env.PORT ?? 3000);
   console.log(`🚀 Server running on port ${process.env.PORT ?? 3000}`);
 }

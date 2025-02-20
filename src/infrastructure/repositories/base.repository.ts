@@ -2,83 +2,61 @@ import {
   DeepPartial,
   FindManyOptions,
   FindOneOptions,
-  FindOptionsWhere,
   Repository,
   ObjectLiteral,
+  FindOptionsWhere,
 } from 'typeorm';
-import { IBaseRepository } from '../interfaces/base-repository.interface';
+import { IBaseRepository } from '@base/infrastructure/interfaces/base-repository.interface';
 import { NotFoundException } from '@nestjs/common';
 import { Uuid } from '@shared/value-object/uuid.vo';
 
-export abstract class BaseAbstractRepostitory<T extends ObjectLiteral>
+export abstract class BaseRepository<T extends ObjectLiteral>
   implements IBaseRepository<T>
 {
-  protected readonly entity: Repository<T>;
-  protected constructor(entity: Repository<T>) {
-    this.entity = entity;
+  constructor(protected readonly repository: Repository<T>) {}
+  create(data: DeepPartial<T>): T {
+    throw new Error('Method not implemented.');
+  }
+  createMany(data: DeepPartial<T>[]): T[] {
+    throw new Error('Method not implemented.');
+  }
+  saveMany(data: DeepPartial<T>[]): Promise<T[]> {
+    throw new Error('Method not implemented.');
+  }
+  findWithRelations(relations: FindManyOptions<T>): Promise<T[]> {
+    throw new Error('Method not implemented.');
+  }
+  preload(entityLike: DeepPartial<T>): Promise<T> {
+    throw new Error('Method not implemented.');
   }
 
-  public async save(data: DeepPartial<T>): Promise<T> {
-    return await this.entity.save(data);
+  async save(data: DeepPartial<T>): Promise<T> {
+    return this.repository.save(data);
   }
 
-  public async saveMany(data: DeepPartial<T>[]): Promise<T[]> {
-    return this.entity.save(data);
-  }
-
-  public create(data: DeepPartial<T>): T {
-    return this.entity.create(data);
-  }
-
-  public createMany(data: DeepPartial<T>[]): T[] {
-    return this.entity.create(data);
-  }
-
-  public async findOneById(id: Uuid): Promise<T> {
-    const options: FindOptionsWhere<T> = {
-      id: id.toString(),
-    } as unknown as FindOptionsWhere<T>;
-
-    const result = await this.entity.findOneBy(options);
+  async findOneById(id: Uuid): Promise<T> {
+    const result = await this.repository.findOne({
+      where: { id: id.toString() } as any as FindOptionsWhere<T>,
+    });
     if (!result) {
       throw new NotFoundException('Entity not found');
     }
     return result;
   }
 
-  public async findByCondition(filterCondition: FindOneOptions<T>): Promise<T> {
-    const result = await this.entity.findOne(filterCondition);
+  async findByCondition(filterCondition: FindOneOptions<T>): Promise<T> {
+    const result = await this.repository.findOne(filterCondition);
     if (!result) {
       throw new NotFoundException('Entity not found');
     }
     return result;
   }
 
-  public async findWithRelations(relations: FindManyOptions<T>): Promise<T[]> {
-    return await this.entity.find(relations);
+  async findAll(options?: FindManyOptions<T>): Promise<T[]> {
+    return await this.repository.find(options);
   }
 
-  public async findAll(options?: FindManyOptions<T>): Promise<T[]> {
-    return await this.entity.find(options);
-  }
-
-  public async remove(data: T): Promise<T> {
-    return await this.entity.remove(data);
-  }
-
-  public async preload(entityLike: DeepPartial<T>): Promise<T> {
-    const result = await this.entity.preload(entityLike);
-    if (!result) {
-      throw new NotFoundException('Entity not found');
-    }
-    return result;
-  }
-
-  public async findOne(options: FindOneOptions<T>): Promise<T> {
-    const result = await this.entity.findOne(options);
-    if (!result) {
-      throw new NotFoundException('Entity not found');
-    }
-    return result;
+  async remove(data: T): Promise<T> {
+    return await this.repository.remove(data);
   }
 }

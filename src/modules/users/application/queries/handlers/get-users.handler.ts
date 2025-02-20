@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetUsersQuery } from '@userModule/application/queries/get-users.query';
+import { GetUsersQuery } from '@module/users/application/queries/impl/get-users.query';
 import { GetUsersQueryResult } from '@userModule/application/dtos/get-users.dto';
 import { UserRepository } from '@userModule/infrastructure/repositories/user.repository';
 import { plainToInstance } from 'class-transformer';

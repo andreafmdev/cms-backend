@@ -5,7 +5,7 @@ export class Group {
   private readonly id: Uuid;
   private readonly name: string;
   private readonly permissions: Permission[];
-
+  private static readonly defaultName: string = 'BASE';
   /** Private constructor to enforce factory methods */
   private constructor(id: Uuid, name: string, permissions: Permission[] = []) {
     this.id = id;
@@ -25,6 +25,10 @@ export class Group {
     permissions: Permission[] = [],
   ): Group {
     return new Group(id, name, permissions);
+  }
+
+  static createDefault(): Group {
+    return this.create(this.defaultName, [Permission.createDefault()]);
   }
 
   getId(): Uuid {
