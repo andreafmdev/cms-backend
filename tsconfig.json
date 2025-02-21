@@ -27,7 +27,7 @@
       "@productModule/*": ["src/modules/products/*"],
       "@authModule/*": ["src/modules/auth/*"],
       "@healthModule/*": ["src/modules/healthCheck/*"],
-      
+      "@/*": ["src/*"],
     }
   },
 

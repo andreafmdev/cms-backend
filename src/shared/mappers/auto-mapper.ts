@@ -1,24 +1,23 @@
 import { plainToInstance } from 'class-transformer';
-
-export abstract class AutoMapper<OrmEntity, DomainEntity> {
+export abstract class AutoMapper<OrmEntity, BaseDomainEntity> {
   constructor(
-    private readonly domainFactory: (data: any) => DomainEntity,
+    private readonly domainFactory: (data: any) => BaseDomainEntity,
     private readonly ormClass: new (...args: any[]) => OrmEntity,
   ) {}
 
-  toDomain(entity: OrmEntity): DomainEntity {
+  toDomain(entity: OrmEntity): BaseDomainEntity {
     return this.domainFactory(entity); // Usa la factory method per istanziare il dominio
   }
 
-  toOrm(domain: DomainEntity): OrmEntity {
+  toOrm(domain: BaseDomainEntity): OrmEntity {
     return plainToInstance(this.ormClass, domain);
   }
 
-  toDomainList(entities: OrmEntity[]): DomainEntity[] {
+  toDomainList(entities: OrmEntity[]): BaseDomainEntity[] {
     return entities.map((entity) => this.toDomain(entity));
   }
 
-  toOrmList(domains: DomainEntity[]): OrmEntity[] {
+  toOrmList(domains: BaseDomainEntity[]): OrmEntity[] {
     return domains.map((domain) => this.toOrm(domain));
   }
 }

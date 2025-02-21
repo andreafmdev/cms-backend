@@ -15,7 +15,6 @@ export class UsersController {
     const { username, email, password } = signUpDto;
     const command = new SignUpCommand(username, email, password);
     await this.commandBus.execute(command);
-    console.log('✅ Dopo l’esecuzione del comando');
   }
   @Get()
   async findAll(): Promise<GetUsersQueryResult[]> {

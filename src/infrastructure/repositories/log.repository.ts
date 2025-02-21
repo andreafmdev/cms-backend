@@ -9,7 +9,7 @@ export class LogRepository {
     @InjectRepository(LogOrmEntity)
     private readonly logRepository: Repository<LogOrmEntity>,
   ) {}
-  
+
   async saveLog(level: string, message: string, context?: any): Promise<void> {
     const log = this.logRepository.create({ level, message, context });
     await this.logRepository.save(log);

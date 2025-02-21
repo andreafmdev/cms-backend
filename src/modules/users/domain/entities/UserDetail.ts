@@ -1,29 +1,26 @@
-import { Uuid, UuidGenerator } from '@shared/value-object/uuid.vo';
+import { UuidGenerator } from '@shared/value-object/uuid.vo';
+import { BaseDomainEntity } from '@/domain/BaseDomainEntity';
 
-export class UserDetail {
-  private readonly id: Uuid;
+export class UserDetail extends BaseDomainEntity {
   private readonly address?: string;
   private readonly phoneNumber?: string;
   private readonly profilePictureUrl?: string;
   private readonly biography?: string;
 
   private constructor(
-    id: Uuid,
+    id: string,
     address?: string,
     phoneNumber?: string,
     profilePictureUrl?: string,
     biography?: string,
   ) {
-    this.id = id;
+    super(id);
     this.address = address;
     this.phoneNumber = phoneNumber;
     this.profilePictureUrl = profilePictureUrl;
     this.biography = biography;
   }
 
-  getId(): Uuid {
-    return this.id;
-  }
   /**
    * Factory method to create a new UserDetail with a generated ID.
    */
@@ -34,7 +31,7 @@ export class UserDetail {
     biography?: string,
   ): UserDetail {
     return new UserDetail(
-      UuidGenerator.generate(),
+      UuidGenerator.generate().toString(),
       address,
       phoneNumber,
       profilePictureUrl,
@@ -45,7 +42,7 @@ export class UserDetail {
    * Factory method to create UserDetail with an existing ID (from persistence).
    */
   static createWithId(
-    id: Uuid,
+    id: string,
     address?: string,
     phoneNumber?: string,
     profilePictureUrl?: string,

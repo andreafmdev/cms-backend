@@ -6,14 +6,12 @@ import { UsersModule } from '@module/users/users.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { LoggerModule } from 'nestjs-pino';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { SignUpHandler } from '@module/users/application/commands/handlers/sign-up.handler';
+//import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { ModuleRef } from '@nestjs/core';
 @Module({
   imports: [
-    CqrsModule.forRoot(), // 👈 Importa CqrsModule PRIMA di tutto
-
-    PrometheusModule.register({
+    CqrsModule,
+    /*PrometheusModule.register({
       // Indica il percorso in cui saranno esposte le metriche
       path: '/metrics',
 
@@ -32,7 +30,7 @@ import { ModuleRef } from '@nestjs/core';
 
       // (Opzionale) Configurazione del Pushgateway
       // pushgateway: { url: 'http://127.0.0.1:9091' },
-    }),
+    }),*/
     DevtoolsModule.register({
       http: process.env.NODE_ENVIRONMENT !== 'production',
     }),

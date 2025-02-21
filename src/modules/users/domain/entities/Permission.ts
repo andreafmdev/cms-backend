@@ -1,22 +1,22 @@
-import { Uuid, UuidGenerator } from '@shared/value-object/uuid.vo';
+import { UuidGenerator } from '@shared/value-object/uuid.vo';
+import { BaseDomainEntity } from '@/domain/BaseDomainEntity';
 
-export class Permission {
-  private readonly id: Uuid;
+export class Permission extends BaseDomainEntity {
   private readonly name: string;
   private static readonly defaultPermission: string = 'READ';
   /** Private constructor to enforce factory methods */
-  private constructor(id: Uuid, name: string) {
-    this.id = id;
+  private constructor(id: string, name: string) {
+    super(id);
     this.name = name;
   }
 
   /** Factory method for creating a new Permission with generated ID */
   static create(name: string): Permission {
-    return new Permission(UuidGenerator.generate(), name);
+    return new Permission(UuidGenerator.generate().toString(), name);
   }
 
   /** Factory method for rehydrating a Permission from persistence */
-  static createWithId(id: Uuid, name: string): Permission {
+  static createWithId(id: string, name: string): Permission {
     return new Permission(id, name);
   }
 
@@ -24,7 +24,7 @@ export class Permission {
     return this.create(this.defaultPermission);
   }
 
-  getId(): Uuid {
+  getId(): string {
     return this.id;
   }
 

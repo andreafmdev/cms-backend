@@ -1,5 +1,5 @@
 // users Module// src/features/users/users.module.ts
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserOrmEntity } from '@userModule/infrastructure/entities/user.orm-entity';
 import { GroupOrmEntity } from '@userModule/infrastructure/entities/group.orm-entity';
@@ -11,15 +11,16 @@ import { UserDetailOrmEntity } from '@userModule/infrastructure/entities/user-de
 import { GetUsersHandler } from '@module/users/application/queries/handlers/get-users.handler';
 import { UserMapper } from '@userModule/application/mapper/user-mapper';
 import { SignUpHandler } from './application/commands/handlers/sign-up.handler';
-import { CommandBus, CqrsModule } from '@nestjs/cqrs';
-import { ModuleRef } from '@nestjs/core';
+import { CqrsModule } from '@nestjs/cqrs';
+import { GroupRepository } from './infrastructure/repositories/group.repository';
+import { SignUpUserEventHandler } from './application/events/sign-up-user.handler';
 
 const CommandHandlers = [SignUpHandler];
 const QueryHandlers = [GetUsersHandler];
-
+const EventHandlers = [SignUpUserEventHandler];
 @Module({
   imports: [
-    CqrsModule.forRoot(),
+    CqrsModule,
     DatabaseModule,
     TypeOrmModule.forFeature([
       UserOrmEntity,
@@ -30,19 +31,16 @@ const QueryHandlers = [GetUsersHandler];
   ],
 
   controllers: [UsersController],
-  providers: [SignUpHandler, UserRepository, UserMapper, ...QueryHandlers],
+  providers: [
+    UserRepository,
+    GroupRepository,
+    UserMapper,
+    ...QueryHandlers,
+    ...CommandHandlers,
+    ...EventHandlers,
+  ],
   exports: [],
 })
-export class UsersModule implements OnModuleInit {
-  constructor(
-    private readonly moduleRef: ModuleRef,
-    private readonly commandBus: CommandBus,
-  ) {}
-  onModuleInit() {
-    console.log('✅ Checking registered command handlers in CommandBus...');
-
-    // Recupera gli handler registrati nel CommandBus
-
-    console.log('🔍 Registered Command Handlers:', this.commandBus);
-  }
+export class UsersModule {
+  constructor() {}
 }

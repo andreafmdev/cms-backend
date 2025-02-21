@@ -1,9 +1,9 @@
-import { Uuid, UuidGenerator } from '@shared/value-object/uuid.vo';
+import { UuidGenerator } from '@shared/value-object/uuid.vo';
 import { Group } from './Group';
 import { UserDetail } from './UserDetail';
+import { BaseDomainEntity } from '@/domain/BaseDomainEntity';
 
-export class User {
-  private readonly id: Uuid;
+export class User extends BaseDomainEntity {
   private readonly username: string;
   private readonly email: string;
   private password: string;
@@ -14,14 +14,15 @@ export class User {
    * private constructor: Forces the use of `create()`.
    */
   private constructor(
-    id: Uuid,
+    id: string | undefined, // Ora l'ID è opzionale
     username: string,
     email: string,
     password: string,
     groups: Group[],
     details: UserDetail,
   ) {
-    this.id = id;
+    super(id);
+
     this.username = username;
     this.email = email;
     this.password = password;
@@ -40,17 +41,17 @@ export class User {
     details?: UserDetail | null,
   ): User {
     return new User(
-      UuidGenerator.generate(),
+      UuidGenerator.generate().toString(),
       username,
       email,
       password,
-      groups && groups.length > 0 ? [...groups] : [Group.createDefault()],
+      groups && groups.length > 0 ? [...groups] : [],
       details ?? UserDetail.createDefault(),
     );
   }
 
   /** Returns the user ID. */
-  getId(): Uuid {
+  getId(): string {
     return this.id;
   }
 
@@ -120,7 +121,7 @@ export class User {
 
   /*Utility methods*/
   static createWithId(
-    id: Uuid,
+    id: string,
     username: string,
     email: string,
     password: string,

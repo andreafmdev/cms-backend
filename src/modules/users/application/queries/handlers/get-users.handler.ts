@@ -4,7 +4,6 @@ import { GetUsersQueryResult } from '@userModule/application/dtos/get-users.dto'
 import { UserRepository } from '@userModule/infrastructure/repositories/user.repository';
 import { plainToInstance } from 'class-transformer';
 import { NotFoundException } from '@nestjs/common';
-import { UserOrmEntity } from '@module/users/infrastructure/entities/user.orm-entity';
 import { UserMapper } from '@module/users/application/mapper/user-mapper';
 import { User } from '@module/users/domain/entities/User';
 
@@ -16,26 +15,27 @@ export class GetUsersHandler implements IQueryHandler<GetUsersQuery> {
   ) {}
 
   async execute(query: GetUsersQuery): Promise<GetUsersQueryResult[]> {
-    let usersOrm: UserOrmEntity[];
+    const usersResults: User[] = [];
 
     if (query.id) {
-      const user = await this.userRepository.findById(query.id);
-      if (!user) {
+      const userOrm = await this.userRepository.findById(query.id);
+      if (!userOrm) {
         throw new NotFoundException(`User with ID ${query.id} not found`);
       }
-      usersOrm = [user];
+      const user: User = this.userMapper.toDomain(userOrm);
+      usersResults.push(user);
     } else {
-      usersOrm = await this.userRepository.findAll();
+      const usersOrm = await this.userRepository.findAll();
       if (usersOrm.length === 0) {
         throw new NotFoundException('No users found');
       }
+      usersResults.push(
+        ...usersOrm.map((userOrm) => this.userMapper.toDomain(userOrm)),
+      );
     }
-    const usersDomain: User[] = usersOrm.map((user) =>
-      this.userMapper.toDomain(user),
-    );
 
     // Map domain with class transfomer
-    return plainToInstance(GetUsersQueryResult, usersDomain, {
+    return plainToInstance(GetUsersQueryResult, usersResults, {
       excludeExtraneousValues: true,
     });
   }
