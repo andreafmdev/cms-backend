@@ -1,5 +1,5 @@
 export abstract class UniqueId<T> {
-  protected readonly value: T;
+  private readonly value: T;
 
   protected constructor(value: T) {
     this.value = value;

@@ -1,9 +1,10 @@
 import { Controller, Get, Param, Post, Body } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { GetUsersQuery } from '@module/users/application/queries/impl/get-users.query';
-import { GetUsersQueryResult } from './application/dtos/get-users.dto';
-import { SignUpCommand } from './application/commands/impl/sign-up.command';
-import { SignUpDto } from './application/dtos/sign-up.dto';
+import { GetUsersQuery } from '@module/users/application/queries/get-users/get-users.query';
+import { GetUsersQueryResult } from './application/queries/get-users/get-users.response.dto';
+import { SignUpCommand } from './application/commands/sign-up/sign-up.command';
+import { SignUpDto } from './application/commands/sign-up/sign-up.dto';
+
 @Controller('users')
 export class UsersController {
   constructor(

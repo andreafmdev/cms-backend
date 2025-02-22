@@ -1,31 +1,39 @@
-import { UuidGenerator } from '@shared/value-object/uuid.vo';
-import { BaseDomainEntity } from '@/domain/BaseDomainEntity';
+import { PermissionId } from '../value-objects/permission-id.vo';
 
-export class Permission extends BaseDomainEntity {
-  private readonly name: string;
-  private static readonly defaultPermission: string = 'READ';
-  /** Private constructor to enforce factory methods */
-  private constructor(id: string, name: string) {
-    super(id);
-    this.name = name;
+export class Permission {
+  private static readonly DEFAULT_NAME = 'READ';
+
+  private static readonly VALID_PERMISSIONS = new Set([
+    'READ',
+    'WRITE',
+    'DELETE',
+  ]);
+
+  private constructor(
+    private readonly id: PermissionId,
+    private readonly name: string,
+  ) {
+    if (!Permission.VALID_PERMISSIONS.has(name)) {
+      throw new Error(`Invalid permission: ${name}`);
+    }
   }
 
-  /** Factory method for creating a new Permission with generated ID */
+  /** Factory method per creare un nuovo permesso */
   static create(name: string): Permission {
-    return new Permission(UuidGenerator.generate().toString(), name);
+    return new Permission(PermissionId.create(), name);
   }
 
-  /** Factory method for rehydrating a Permission from persistence */
-  static createWithId(id: string, name: string): Permission {
-    return new Permission(id, name);
+  static isValid(name: string): boolean {
+    return Permission.VALID_PERMISSIONS.has(name);
   }
 
+  /** Crea un permesso di default */
   static createDefault(): Permission {
-    return this.create(this.defaultPermission);
+    return new Permission(PermissionId.create(), Permission.DEFAULT_NAME);
   }
 
-  getId(): string {
-    return this.id;
+  equals(other: Permission): boolean {
+    return this.name === other.name;
   }
 
   getName(): string {

@@ -8,6 +8,7 @@ import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { LoggerModule } from 'nestjs-pino';
 //import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { ModuleRef } from '@nestjs/core';
+
 @Module({
   imports: [
     CqrsModule,

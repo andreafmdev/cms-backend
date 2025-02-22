@@ -8,36 +8,47 @@ import { UserRepository } from '@userModule/infrastructure/repositories/user.rep
 import { DatabaseModule } from '@base/infrastructure/database/database.module';
 import { UsersController } from './user.controller';
 import { UserDetailOrmEntity } from '@userModule/infrastructure/entities/user-detail.orm-entity';
-import { GetUsersHandler } from '@module/users/application/queries/handlers/get-users.handler';
-import { UserMapper } from '@userModule/application/mapper/user-mapper';
-import { SignUpHandler } from './application/commands/handlers/sign-up.handler';
+import { GetUsersHandler } from '@module/users/application/queries/get-users/get-users.handler';
+import { UserMapper } from '@module/users/infrastructure/mapper/user-mapper';
+import { SignUpHandler } from './application/commands/sign-up/sign-up.handler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GroupRepository } from './infrastructure/repositories/group.repository';
-import { SignUpUserEventHandler } from './application/events/sign-up-user.handler';
-
-const CommandHandlers = [SignUpHandler];
-const QueryHandlers = [GetUsersHandler];
-const EventHandlers = [SignUpUserEventHandler];
+import { UserEventsModule } from './application/events/user-events.module';
+import { UserDetailMapper } from './infrastructure/mapper/user-detail.mapper';
+import { GroupMapper } from './infrastructure/mapper/group.mapper';
+import { PermissionMapper } from './infrastructure/mapper/permission.mapper';
+import { CreateGroupHandler } from './application/commands/create-group/create-group.handler';
+import { GroupService } from './application/services/group.service';
+import { PermissionRepository } from './infrastructure/repositories/permission.repository';
+import { GetGroupsHandler } from './application/queries/get-groups/get-groups.handler';
+import { UserService } from './application/services/user.service';
+import { GroupController } from './group.controller';
+const Entities = [
+  UserOrmEntity,
+  GroupOrmEntity,
+  PermissionOrmEntity,
+  UserDetailOrmEntity,
+];
+const CommandHandlers = [SignUpHandler, CreateGroupHandler];
+const QueryHandlers = [GetUsersHandler, GetGroupsHandler];
+const Services = [GroupService, UserService];
+const Repositories = [GroupRepository, UserRepository, PermissionRepository];
+const Mappers = [GroupMapper, PermissionMapper, UserMapper, UserDetailMapper];
+const Controllers = [UsersController, GroupController];
 @Module({
   imports: [
     CqrsModule,
     DatabaseModule,
-    TypeOrmModule.forFeature([
-      UserOrmEntity,
-      GroupOrmEntity,
-      PermissionOrmEntity,
-      UserDetailOrmEntity,
-    ]),
+    TypeOrmModule.forFeature([...Entities]),
+    UserEventsModule,
   ],
-
-  controllers: [UsersController],
+  controllers: [...Controllers],
   providers: [
-    UserRepository,
-    GroupRepository,
-    UserMapper,
+    ...Mappers,
+    ...Services,
+    ...Repositories,
     ...QueryHandlers,
     ...CommandHandlers,
-    ...EventHandlers,
   ],
   exports: [],
 })

@@ -21,4 +21,16 @@ export class GroupRepository extends BaseRepository<GroupOrmEntity> {
     }
     return group;
   }
+  async findByNameOrId(
+    name: string,
+    id: string,
+  ): Promise<GroupOrmEntity | null> {
+    const group = await super.findByCondition({
+      where: [{ name: name }, { id: id }],
+    });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+    return group;
+  }
 }
