@@ -3,14 +3,11 @@ import {
   Column,
   ManyToMany,
   JoinTable,
-  BeforeInsert,
-  BeforeUpdate,
   OneToOne,
   JoinColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GroupOrmEntity } from './group.orm-entity';
-import * as bcrypt from 'bcrypt';
 import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
 import { UserDetailOrmEntity } from './user-detail.orm-entity';
 @Entity('users') // Table name
@@ -26,6 +23,12 @@ export class UserOrmEntity extends BaseOrmEntity {
   @Column()
   password!: string;
 
+  @Column({ default: false })
+  isEmailVerified!: boolean;
+
+  @Column({ default: false })
+  isActive!: boolean;
+
   @ManyToMany(() => GroupOrmEntity, (group) => group.users, {
     cascade: true,
     eager: true,
@@ -40,24 +43,6 @@ export class UserOrmEntity extends BaseOrmEntity {
   @JoinColumn({ name: 'details_id' }) // Nome della colonna FK in `users`
   details?: UserDetailOrmEntity;
 
-  @Column({ default: true })
-  isActive!: boolean;
-
   @Column({ nullable: true })
   lastLogin?: Date;
-
-  // Automatically hashes the password before inserting or updating
-  @BeforeInsert()
-  @BeforeUpdate()
-  async hashPassword() {
-    if (this.password) {
-      const salt = await bcrypt.genSalt();
-      this.password = await bcrypt.hash(this.password, salt);
-    }
-  }
-
-  // Compares a plain text password with the hashed password
-  async comparePassword(password: string): Promise<boolean> {
-    return bcrypt.compare(password, this.password);
-  }
 }

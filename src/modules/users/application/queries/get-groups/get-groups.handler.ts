@@ -10,19 +10,17 @@ import { plainToInstance } from 'class-transformer';
 export class GetGroupsHandler implements IQueryHandler<GetGroupsQuery> {
   constructor(private readonly groupService: GroupService) {}
 
-  async execute(query: GetGroupsQuery): Promise<GetGroupsResponseDto[]> {
-    const groups: Group[] = await this.groupService.findGroupsByNameOrId(
-      query.name ?? '',
-      query.id ?? '',
-    );
+  async execute(): Promise<GetGroupsResponseDto[]> {
+    const groups: Group[] = await this.groupService.findAllGroups();
+
     const groupsResult: GetGroupsResponseDto[] = groups.map((group) =>
       plainToInstance(
         GetGroupsResponseDto,
         {
-          id: group.getId().toString(),
-          name: group.getName(),
+          id: group.getId().toString() ?? '',
+          name: group.getName() ?? '',
           permissions: group.getPermissions().map((p) => ({
-            name: p.getName(),
+            name: p.getName() ?? '',
           })),
         },
         {

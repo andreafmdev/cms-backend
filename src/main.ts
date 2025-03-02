@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { GlobalExceptionsFilter } from '@shared/filters/global-exception.filter';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -21,7 +20,6 @@ async function bootstrap() {
   await app.register(cors);
   await app.register(helmet);
   // ✅ Use global filters for handiling exceptions
-  app.useGlobalFilters(new GlobalExceptionsFilter());
 
   // ✅ Implementa il middleware correttamente per Fastify
   app.useLogger(app.get(Logger));

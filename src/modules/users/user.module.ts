@@ -1,5 +1,5 @@
 // users Module// src/features/users/users.module.ts
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserOrmEntity } from '@userModule/infrastructure/entities/user.orm-entity';
 import { GroupOrmEntity } from '@userModule/infrastructure/entities/group.orm-entity';
@@ -23,6 +23,8 @@ import { PermissionRepository } from './infrastructure/repositories/permission.r
 import { GetGroupsHandler } from './application/queries/get-groups/get-groups.handler';
 import { UserService } from './application/services/user.service';
 import { GroupController } from './group.controller';
+import { MailerModule } from '@module/mailer/mailer.module';
+import { AuthModule } from '@module/auth/auth.module';
 const Entities = [
   UserOrmEntity,
   GroupOrmEntity,
@@ -41,6 +43,8 @@ const Controllers = [UsersController, GroupController];
     DatabaseModule,
     TypeOrmModule.forFeature([...Entities]),
     UserEventsModule,
+    MailerModule,
+    forwardRef(() => AuthModule),
   ],
   controllers: [...Controllers],
   providers: [
@@ -50,8 +54,8 @@ const Controllers = [UsersController, GroupController];
     ...QueryHandlers,
     ...CommandHandlers,
   ],
-  exports: [],
+  exports: [UserService],
 })
-export class UsersModule {
+export class UserModule {
   constructor() {}
 }

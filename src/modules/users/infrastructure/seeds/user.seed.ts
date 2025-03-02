@@ -6,6 +6,7 @@ import { faker } from '@faker-js/faker';
 import { PermissionFactory } from '../factories/permission.factory';
 import { GroupFactory } from '../factories/group.factory';
 import { UserDetailOrmEntity } from '@userModule/infrastructure/entities/user-detail.orm-entity';
+import { UserFactory } from '../factories/user.factory';
 
 export default class UserSeeder implements Seeder {
   public async run(
@@ -17,7 +18,7 @@ export default class UserSeeder implements Seeder {
     // Ottieni repository e factory
     const permissionFactory = new PermissionFactory(dataSource);
     const groupFactory = new GroupFactory(dataSource);
-    const userFactory = factoryManager.get(UserOrmEntity);
+    const userFactory = new UserFactory(dataSource);
     const userDetailFactory = factoryManager.get(UserDetailOrmEntity);
     const userRepository = dataSource.getRepository(UserOrmEntity);
 
@@ -50,7 +51,7 @@ export default class UserSeeder implements Seeder {
           //CREATE USER DETAIL
           const userDetails = await userDetailFactory.make();
 
-          const user = await userFactory.make();
+          const user = await userFactory.createRandomUser();
           user.groups = faker.helpers.arrayElements(updatedGroups, 1); // Assegna 1 gruppo casuale
           user.details = userDetails;
           // Salva l'utente
@@ -60,6 +61,16 @@ export default class UserSeeder implements Seeder {
       );
       console.log(`✅ ${users.length} utenti creati.`);
 
+      // 6️⃣ Crea Admin User
+      console.log("⚙️ Creazione dell'utente amministratore...");
+
+      const adminUser = await userFactory.createAdminUser();
+      adminUser.groups = await groupRepository.find({
+        where: { name: 'Admin' },
+      });
+      adminUser.details = await userDetailFactory.make();
+      await userRepository.save(adminUser);
+      console.log('✅ Utente amministratore creato:', adminUser);
       console.log('🎉 UserSeeder completato con successo!');
     } catch (error) {
       console.error('❌ Errore durante il seeding:', error);

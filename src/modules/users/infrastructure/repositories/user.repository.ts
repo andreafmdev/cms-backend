@@ -1,27 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IUserRepository } from '@userModule/domain/repositories/user-repository';
 import { UserOrmEntity } from '@userModule/infrastructure/entities/user.orm-entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseRepository } from '@base/infrastructure/repositories/base.repository';
-import { Uuid } from '@shared/value-object/uuid.vo';
+import { UserId } from '@module/users/domain/value-objects/user-id.vo';
 
 @Injectable()
 export class UserRepository
-  extends BaseRepository<UserOrmEntity, Uuid>
+  extends BaseRepository<UserOrmEntity, UserId>
   implements IUserRepository
 {
   constructor(
     @InjectRepository(UserOrmEntity)
-    private readonly userRepository: Repository<UserOrmEntity>,
+    private readonly ormRepository: Repository<UserOrmEntity>,
   ) {
-    super(userRepository);
+    super(ormRepository);
   }
-  async findById(id: string): Promise<UserOrmEntity | null> {
-    const user = await super.findOneById(Uuid.fromString(id));
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  async findById(id: UserId): Promise<UserOrmEntity | null> {
+    const user = await super.findById(id);
+
     return user;
   }
 }

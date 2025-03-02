@@ -5,11 +5,16 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
 import { FastifyReply } from 'fastify';
 
 @Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const { httpAdapter } = this.httpAdapterHost;
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<Request>();
@@ -25,11 +30,13 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Internal server error';
 
-    response.status(status).send({
+    const responseBody = {
       statusCode: status,
-      message,
       timestamp: new Date().toISOString(),
       path: request.url,
-    });
+      message,
+    };
+
+    httpAdapter.reply(response, responseBody, status);
   }
 }

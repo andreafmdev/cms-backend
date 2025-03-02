@@ -5,7 +5,7 @@ export class GetGroupsResponseDto {
   id: string;
   @Expose()
   name: string;
-
+  @Expose()
   @Type(() => PermissionDto)
   permissions: PermissionDto[];
 }

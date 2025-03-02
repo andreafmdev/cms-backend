@@ -5,7 +5,8 @@ import { Permission } from '@module/users/domain/entities/permission';
 import { PermissionRepository } from '@module/users/infrastructure/repositories/permission.repository';
 import { PermissionMapper } from '@module/users/infrastructure/mapper/permission.mapper';
 import { GroupMapper } from '@module/users/infrastructure/mapper/group.mapper';
-
+import { Filter, FilterComposite } from '@shared/helpers/query-filter';
+import { GroupId } from '@module/users/domain/value-objects/group-id.vo';
 /**
  * Service responsible for managing group-related operations
  */
@@ -27,7 +28,7 @@ export class GroupService {
    */
   async createGroup(name: string, permissionNames: string[]): Promise<Group> {
     // Check if group already exists
-    const existingGroup = await this.groupRepository.findByCondition({
+    const existingGroup = await this.groupRepository.findOneByCondition({
       where: { name },
     });
 
@@ -69,12 +70,9 @@ export class GroupService {
    * @param id The ID of the group to find
    * @returns The found group or null if not found
    */
-  async findGroupById(id: string): Promise<Group | null> {
-    const groupOrm = await this.groupRepository.findOneById(id);
-    if (!groupOrm) {
-      return null;
-    }
-    return this.groupMapper.toDomain(groupOrm);
+  async findGroupById(id: GroupId): Promise<Group | null> {
+    const groupOrm = await this.groupRepository.findById(id.getValue());
+    return groupOrm ? this.groupMapper.toDomain(groupOrm) : null;
   }
 
   /**
@@ -83,15 +81,10 @@ export class GroupService {
    * @param id The ID to search for
    * @returns Array of matching groups
    */
-  async findGroupsByNameOrId(name: string, id: string): Promise<Group[]> {
-    const groups: Group[] = [];
-
+  async findGroupByNameOrId(name: string, id: GroupId): Promise<Group | null> {
     const groupOrm = await this.groupRepository.findByNameOrId(name, id);
-    if (!groupOrm) {
-      return groups;
-    }
-    groups.push(this.groupMapper.toDomain(groupOrm));
-    return groups;
+
+    return groupOrm ? this.groupMapper.toDomain(groupOrm) : null;
   }
 
   /**
@@ -101,5 +94,23 @@ export class GroupService {
   async findAllGroups(): Promise<Group[]> {
     const groupsOrm = await this.groupRepository.findAll();
     return groupsOrm.map((groupOrm) => this.groupMapper.toDomain(groupOrm));
+  }
+
+  /**
+   * Finds groups based on the provided filter
+   * @param filter The filter to apply to the groups
+   * @returns Array of groups matching the filter
+   */
+  async findGroups(filter: Filter | FilterComposite): Promise<Group[]> {
+    const groups: Group[] = [];
+
+    const groupsOrm = await this.groupRepository.findAllByCondition(filter);
+    if (!groupsOrm) {
+      return groups;
+    }
+    groups.push(
+      ...groupsOrm.map((groupOrm) => this.groupMapper.toDomain(groupOrm)),
+    );
+    return groups;
   }
 }

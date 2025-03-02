@@ -18,12 +18,11 @@ export class GetUsersHandler implements IQueryHandler<GetUsersQuery> {
     const usersResults: User[] = [];
 
     if (query.id) {
-      const userOrm = await this.userRepository.findById(query.id);
-      if (!userOrm) {
-        throw new NotFoundException(`User with ID ${query.id} not found`);
-      }
-      const user: User = this.userMapper.toDomain(userOrm);
-      usersResults.push(user);
+      const userOrm = await this.userRepository.findAllByCondition(query.id);
+
+      usersResults.push(
+        ...userOrm.map((userOrm) => this.userMapper.toDomain(userOrm)),
+      );
     } else {
       const usersOrm = await this.userRepository.findAll();
       if (usersOrm.length === 0) {

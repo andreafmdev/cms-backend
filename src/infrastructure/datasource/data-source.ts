@@ -7,13 +7,12 @@ import { GroupOrmEntity } from '@module/users/infrastructure/entities/group.orm-
 import { PermissionOrmEntity } from '@module/users/infrastructure/entities/permission.orm-entity';
 import { SeederOptions } from 'typeorm-extension';
 import UserSeeder from '@userModule/infrastructure/seeds/user.seed';
-import UserFactory from '@userModule/infrastructure/factories/user.factory';
 import UserDetailFactory from '@userModule/infrastructure/factories/user-details.factory';
 import { UserDetailOrmEntity } from '@module/users/infrastructure/entities/user-detail.orm-entity';
 
 const options: SeederOptions = {
   seeds: [UserSeeder], // ✅ Path per i seed
-  factories: [UserFactory, UserDetailFactory], // ✅ Path per le factory
+  factories: [UserDetailFactory], // ✅ Path per le factory
 };
 dotenv.config();
 

@@ -5,6 +5,7 @@ import { UserDetailMapper } from './user-detail.mapper';
 import { GroupMapper } from './group.mapper';
 import { UserDetail } from '@module/users/domain/entities/user-detail';
 import { UserDetailOrmEntity } from '../entities/user-detail.orm-entity';
+import { Password } from '@module/users/domain/value-objects/password.vo';
 
 // modules/users/infrastructure/mappers/user.mapper.ts
 @Injectable()
@@ -30,7 +31,7 @@ export class UserMapper {
     return User.create({
       username: orm.username,
       email: orm.email,
-      password: orm.password,
+      password: Password.fromHashed(orm.password),
       groups: groups,
       details: details,
     });
@@ -45,7 +46,7 @@ export class UserMapper {
     orm.id = domainEntity.getId().toString();
     orm.username = domainEntity.getUsername();
     orm.email = domainEntity.getEmail().toString();
-    orm.password = domainEntity.getPassword();
+    orm.password = domainEntity.getPassword().getValue();
     orm.groups = domainEntity
       .getGroups()
       .map((g) => this.groupMapper.toPersistence(g));

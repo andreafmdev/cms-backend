@@ -1,6 +1,6 @@
 import { IsString, IsArray, ArrayNotEmpty } from 'class-validator';
 
-export class CreateGroupDto {
+export class CreateGroupRequestDto {
   @IsString()
   name: string;
 

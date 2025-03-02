@@ -22,6 +22,4 @@ export abstract class ValueObject<T> {
   getProps(): T {
     return Object.freeze({ ...this.props });
   }
-
- 
 }

@@ -3,10 +3,16 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
+    "assets": [
+      {
+        "include": "modules/mailer/templates/**/*",
+        "outDir": "dist"
+      }
+    ],
+    "watchAssets": true,
     "deleteOutDir": true,
     "builder": "swc",
     "typeCheck": true,
     "tsConfigPath": "tsconfig.json"
-
   }
 }

@@ -1,39 +1,26 @@
 import { ICommandHandler, CommandHandler, EventBus } from '@nestjs/cqrs';
 import { SignUpCommand } from '@module/users/application/commands/sign-up/sign-up.command';
-import { UserRepository } from '@userModule/infrastructure/repositories/user.repository';
-import { BadRequestException } from '@nestjs/common';
-import { User } from '@module/users/domain/aggretates/user';
-import { UserMapper } from '@module/users/infrastructure/mapper/user-mapper';
-import { GroupRepository } from '@userModule/infrastructure/repositories/group.repository';
-//import { Injectable } from '@nestjs/common';
+import { UserService } from '../../services/user.service';
+import { NotificationService } from '@module/mailer/mailer.service';
 @CommandHandler(SignUpCommand)
-//@Injectable()
 export class SignUpHandler implements ICommandHandler<SignUpCommand> {
   constructor(
-    private readonly userRepository: UserRepository,
-    private readonly groupRepository: GroupRepository,
-    private readonly userMapper: UserMapper,
+    private readonly userService: UserService,
     private readonly eventBus: EventBus,
-  ) {
-    console.log('✅ SignUpHandler registrato!');
-  }
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async execute(command: SignUpCommand): Promise<void> {
     const { username, email, password } = command;
-    const userPresent = await this.userRepository.findByCondition({
-      where: [{ email }, { username }],
+    const user = await this.userService.createUser(username, email, password);
+    user?.domainEvents.forEach((event) => {
+      this.eventBus.publish(event);
     });
-    if (userPresent) {
-      throw new BadRequestException('User already exists');
-    }
-    const group = await this.groupRepository.findByName('Viewer');
-    if (!group) {
-      throw new BadRequestException('Base Group Not Found');
-    }
-    const user: User = User.create({ username, email, password });
-    const userOrm = this.userMapper.toPersistence(user);
-    await this.userRepository.save(userOrm);
-
+    user?.clearDomainEvents();
+    await this.notificationService.sendWelcomeEmail(
+      'freddi.dev@gmail.com',
+      username,
+    );
     return;
   }
 }

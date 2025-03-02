@@ -2,13 +2,19 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { DatabaseModule } from '@base/infrastructure/database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HealthModule } from '@module/healthCheck/health.module';
-import { UsersModule } from '@module/users/users.module';
+import { UserModule } from '@module/users/user.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { LoggerModule } from 'nestjs-pino';
 //import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { ModuleRef } from '@nestjs/core';
+import { APP_FILTER, ModuleRef } from '@nestjs/core';
+import { GlobalExceptionsFilter } from '@shared/filters/global-exception.filter';
+import { AuthModule } from '@module/auth/auth.module';
 
+const GlobalFilterProvider = {
+  provide: APP_FILTER,
+  useClass: GlobalExceptionsFilter,
+};
 @Module({
   imports: [
     CqrsModule,
@@ -42,7 +48,7 @@ import { ModuleRef } from '@nestjs/core';
     LoggerModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         pinoHttp: {
-          level: configService.get<string>('LOG_LEVEL') || 'info',
+          level: configService.get<string>('LOG_LEVEL') || 'debug',
           transport:
             process.env.NODE_ENV !== 'production'
               ? {
@@ -58,11 +64,12 @@ import { ModuleRef } from '@nestjs/core';
       }),
       inject: [ConfigService],
     }),
+    AuthModule,
     DatabaseModule,
-    UsersModule,
+    UserModule,
     HealthModule,
   ], // Importa DatabaseModule
-  providers: [CommandBus],
+  providers: [CommandBus, GlobalFilterProvider],
 })
 export class AppModule implements OnModuleInit {
   constructor(
