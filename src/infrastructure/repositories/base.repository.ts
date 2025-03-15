@@ -16,23 +16,9 @@ export abstract class BaseRepository<
 {
   constructor(protected readonly repository: Repository<OrmEntity>) {}
   create(data: DeepPartial<OrmEntity>): OrmEntity {
-    throw new Error('Method not implemented.');
-  }
-  createMany(data: DeepPartial<OrmEntity>[]): OrmEntity[] {
-    throw new Error('Method not implemented.');
-  }
-  saveMany(data: DeepPartial<OrmEntity>[]): Promise<OrmEntity[]> {
-    throw new Error('Method not implemented.');
+    return this.repository.create(data);
   }
 
-  findWithRelations(
-    relations: FindManyOptions<OrmEntity>,
-  ): Promise<OrmEntity[]> {
-    throw new Error('Method not implemented.');
-  }
-  preload(entityLike: DeepPartial<OrmEntity>): Promise<OrmEntity> {
-    throw new Error('Method not implemented.');
-  }
   async save(entity: OrmEntity): Promise<OrmEntity> {
     const savedEntity = await this.repository.save(entity);
     return savedEntity;
@@ -71,21 +57,20 @@ export abstract class BaseRepository<
     const deletedEntity = await this.repository.remove(entity);
     return deletedEntity;
   }
-  /* create(data: DeepPartial<BaseDomainEntity>): BaseDomainEntity {
-    throw new Error('Method not implemented.');
-  }*/ /*
-  createMany(data: DeepPartial<T>[]): T[] {
-    throw new Error('Method not implemented.');
+  async findOneByFilters<FilterType>(
+    filters: FilterType,
+  ): Promise<OrmEntity | null> {
+    return this.repository.findOne({
+      where: filters as FindOptionsWhere<OrmEntity>,
+    });
   }
-  saveMany(data: DeepPartial<T>[]): Promise<T[]> {
-    throw new Error('Method not implemented.');
+  async findAllByFilters<FilterType>(
+    filters: FilterType,
+  ): Promise<OrmEntity[]> {
+    return this.repository.find({
+      where: filters as FindOptionsWhere<OrmEntity>,
+    });
   }
-  findWithRelations(relations: FindManyOptions<T>): Promise<T[]> {
-    throw new Error('Method not implemented.');
-  }
-  preload(entityLike: DeepPartial<T>): Promise<T> {
-    throw new Error('Method not implemented.');
-  }*/
   private hasToStringMethod(id: unknown): id is { toString(): string } {
     return (
       id !== null &&

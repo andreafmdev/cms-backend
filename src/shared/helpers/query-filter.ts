@@ -1,3 +1,5 @@
+//!TOCOMPLETE
+
 export enum FilterOperator {
   EQUALS = 'eq',
   NOT_EQUALS = 'ne',

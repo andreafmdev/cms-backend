@@ -29,19 +29,15 @@ export class PermissionGuard extends JwtAuthGuard {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const { user } = request;
 
-    // Verifica se l'utente ha TUTTI i permessi richiesti
-    return hasAllPermissions(user.permissions, requiredPermissions);
-  }
-}
-function hasAllPermissions(
-  userPermissions: string[] | undefined,
-  requiredPermissions: string[],
-): boolean {
-  if (!userPermissions?.length) return false;
+    // Creo un Set con i permessi dell'utente convertiti in maiuscolo
+    const userPermsSet = new Set(
+      user.permissions?.map((perm) => perm.toUpperCase()) || [],
+    );
 
-  const userPermsSet = new Set(userPermissions.map((p) => p.toUpperCase()));
-  const hasPermissions = requiredPermissions.every((p) =>
-    userPermsSet.has(p.toUpperCase()),
-  );
-  return hasPermissions;
+    const hasPermissions = requiredPermissions.every((p) =>
+      userPermsSet.has(p.toUpperCase()),
+    );
+
+    return hasPermissions;
+  }
 }

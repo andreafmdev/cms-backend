@@ -27,6 +27,7 @@ class UserDetailDto {
   biography: string;
 }
 export class GetUsersQueryResult {
+  @Expose()
   id: string;
 
   @Expose()

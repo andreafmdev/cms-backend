@@ -31,7 +31,7 @@ export class GroupGuard extends JwtAuthGuard {
     }
     const { user } = request;
     return requiredGroups.some((group) =>
-      user.groups?.includes(group.toUpperCase()),
+      user.groups?.map((g) => g.toUpperCase()).includes(group.toUpperCase()),
     );
   }
 }

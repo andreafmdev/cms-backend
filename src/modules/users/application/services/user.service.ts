@@ -2,10 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { UserRepository } from '@module/users/infrastructure/repositories/user.repository';
 import { UserMapper } from '@module/users/infrastructure/mapper/user-mapper';
-import { UserDetailMapper } from '@module/users/infrastructure/mapper/user-detail.mapper';
 import { User } from '@module/users/domain/aggretates/user';
 import { UserId } from '@module/users/domain/value-objects/user-id.vo';
 import { Password } from '@module/users/domain/value-objects/password.vo';
+import { UserFilterDto } from '../dto/user-filter.dto';
 
 /**
  * Service responsible for managing group-related operations
@@ -15,12 +15,21 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly userMapper: UserMapper,
-    private readonly userDetailMapper: UserDetailMapper,
   ) {}
 
   async findUserById(id: UserId): Promise<User | null> {
     const userOrm = await this.userRepository.findById(id);
     return userOrm ? this.userMapper.toDomain(userOrm) : null;
+  }
+  async findUserByFilters(
+    filters: Partial<UserFilterDto>,
+  ): Promise<User | null> {
+    const userOrm = await this.userRepository.findOneByFilters(filters);
+    return userOrm ? this.userMapper.toDomain(userOrm) : null;
+  }
+  async findUsersByFilters(filters: Partial<UserFilterDto>): Promise<User[]> {
+    const userOrm = await this.userRepository.findAllByFilters(filters);
+    return userOrm.map((userOrm) => this.userMapper.toDomain(userOrm));
   }
   async createUser(
     username: string,

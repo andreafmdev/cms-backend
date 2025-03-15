@@ -6,7 +6,7 @@ import {
 } from '@nestjs/platform-fastify';
 import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
-import { LoggerMiddleware } from '@shared/middleware/logger.middleware';
+//import { LoggerMiddleware } from '@shared/middleware/logger.middleware';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
@@ -23,13 +23,13 @@ async function bootstrap() {
 
   // ✅ Implementa il middleware correttamente per Fastify
   app.useLogger(app.get(Logger));
-  app
+  /* app
     .getHttpAdapter()
     .getInstance()
     .addHook('onRequest', async (req, res) => {
       const logger = new LoggerMiddleware();
       logger.use(req, res, () => {});
-    });
+    })*/
   await app.init();
 
   await app.listen(process.env.PORT ?? 3000);

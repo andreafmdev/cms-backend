@@ -1,3 +1,5 @@
+//this file implements the jwt authentication guard , so it's used to check if the user is authenticated by checking jwt parameters
+//it check if the token is valid and if the user is authenticated
 import {
   CanActivate,
   ExecutionContext,

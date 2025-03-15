@@ -1,38 +1,27 @@
-import { Controller, Get, Param, Req } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { Controller, Get, Post, Req, Body, HttpCode } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { GetUsersQuery } from '@module/users/application/queries/get-users/get-users.query';
 import { GetUsersQueryResult } from './application/queries/get-users/get-users.response.dto';
 
-import {
-  RequireGroup,
-  RequirePermission,
-} from '@module/auth/decorator/auth.decorator';
+import { RequireGroup } from '@module/auth/decorator/auth.decorator';
 import { RequestWithUser } from '@module/auth/types/requestWithUser';
-
+import { UserFilterDto } from './application/dto/user-filter.dto';
+import { HttpStatus } from '@nestjs/common';
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
-  /*@Post('sign-up')
-  async create(@Body() signUpRequest: SignUpRequest): Promise<void> {
-    const { username, email, password } = signUpRequest;
-    const command = new SignUpCommand(username, email, password);
-    await this.commandBus.execute(command);
-  }*/
+  constructor(private readonly queryBus: QueryBus) {}
+
   @RequireGroup('ADMIN', 'EDITOR')
-  @Get()
-  async findAll(): Promise<GetUsersQueryResult[]> {
-    return await this.queryBus.execute(new GetUsersQuery());
+  @HttpCode(HttpStatus.OK)
+  @Post()
+  async findAllByFilters(
+    @Body() filters: UserFilterDto,
+  ): Promise<GetUsersQueryResult[]> {
+    return await this.queryBus.execute(new GetUsersQuery(filters));
   }
-  @RequirePermission('ASSS', 'WRITE')
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<GetUsersQueryResult> {
-    return await this.queryBus.execute(new GetUsersQuery(id));
-  }
+
   @Get('test-groups')
-  @RequireGroup('ADMIN')
+  @RequireGroup('Admin')
   testGroups(@Req() request: RequestWithUser) {
     const user = request.user;
     return {
