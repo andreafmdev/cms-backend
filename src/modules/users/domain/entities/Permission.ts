@@ -39,4 +39,18 @@ export class Permission {
   getName(): string {
     return this.name;
   }
+
+  getId(): PermissionId {
+    return this.id;
+  }
+
+  /**
+   * Reconstitutes a permission from its properties
+   * @param id - The ID of the permission
+   * @param name - The name of the permission
+   * @returns A new permission with the same properties as the current permission
+   */
+  static reconstitute(id: PermissionId, name: string): Permission {
+    return new Permission(id, name);
+  }
 }

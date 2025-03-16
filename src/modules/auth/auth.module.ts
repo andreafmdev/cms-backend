@@ -11,7 +11,6 @@ import { UserModule } from '@module/users/user.module';
 import { GroupGuard } from './guard/group.guard';
 import { PermissionGuard } from './guard/permission.guard';
 import { JwtAuthStrategy } from './jwt.strategy';
-
 const imports = [
   PassportModule.register({ defaultStrategy: 'jwt' }),
   JwtModule.registerAsync({

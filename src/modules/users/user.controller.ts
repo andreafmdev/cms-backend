@@ -1,27 +1,38 @@
-import { Controller, Get, Post, Req, Body, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Req,
+  Body,
+  Query,
+  HttpCode,
+} from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { GetUsersQuery } from '@module/users/application/queries/get-users/get-users.query';
-import { GetUsersQueryResult } from './application/queries/get-users/get-users.response.dto';
+import { SearchUsersQuery } from '@module/users/application/queries/search-users/search-users.query';
+import { SearchUsersResponseDto } from './application/queries/search-users/search-users.response.dto';
 
 import { RequireGroup } from '@module/auth/decorator/auth.decorator';
 import { RequestWithUser } from '@module/auth/types/requestWithUser';
 import { UserFilterDto } from './application/dto/user-filter.dto';
 import { HttpStatus } from '@nestjs/common';
+import { PaginatedResponseDto } from '../../shared/dto/paginated.response.dto';
+import { GetUsersQuery } from './application/queries/get-users/get-users.query';
+import { GetUsersResponseDto } from './application/queries/get-users/get-users.response';
 @Controller('users')
 export class UsersController {
   constructor(private readonly queryBus: QueryBus) {}
 
   @RequireGroup('ADMIN', 'EDITOR')
   @HttpCode(HttpStatus.OK)
-  @Post()
+  @Post('search')
   async findAllByFilters(
     @Body() filters: UserFilterDto,
-  ): Promise<GetUsersQueryResult[]> {
-    return await this.queryBus.execute(new GetUsersQuery(filters));
+  ): Promise<PaginatedResponseDto<SearchUsersResponseDto>> {
+    return await this.queryBus.execute(new SearchUsersQuery(filters));
   }
 
   @Get('test-groups')
-  @RequireGroup('Admin')
+  @RequireGroup('ADMIN')
   testGroups(@Req() request: RequestWithUser) {
     const user = request.user;
     return {
@@ -29,5 +40,13 @@ export class UsersController {
       user: user,
       groups: user.groups,
     };
+  }
+
+  @Get()
+  @RequireGroup('ADMIN')
+  async GetAllUsers(
+    @Query() request: UserFilterDto,
+  ): Promise<PaginatedResponseDto<GetUsersResponseDto>> {
+    return await this.queryBus.execute(new GetUsersQuery(request));
   }
 }

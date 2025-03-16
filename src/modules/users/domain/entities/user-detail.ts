@@ -49,4 +49,19 @@ export class UserDetail {
   getBiography(): string | undefined {
     return this.biography;
   }
+  /**
+   * Reconstitutes a user detail from its properties
+   * @param address - The address of the user detail
+   * @param phoneNumber - The phone number of the user detail
+   * @param profilePictureUrl - The profile picture URL of the user detail
+   * @param biography - The biography of the user detail
+   */
+  static reconstitute(
+    address?: string,
+    phoneNumber?: string,
+    profilePictureUrl?: string,
+    biography?: string,
+  ): UserDetail {
+    return this.create(address, phoneNumber, profilePictureUrl, biography);
+  }
 }

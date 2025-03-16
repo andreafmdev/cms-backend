@@ -61,8 +61,15 @@ export class UserService {
     });
     return userOrm ? this.userMapper.toDomain(userOrm) : null;
   }
+  async findOneById(id: UserId): Promise<User | null> {
+    const userOrm = await this.userRepository.findById(id);
+    return userOrm ? this.userMapper.toDomain(userOrm) : null;
+  }
   async findAllUsers(): Promise<User[]> {
     const usersOrm = await this.userRepository.findAll();
     return usersOrm.map((userOrm) => this.userMapper.toDomain(userOrm));
+  }
+  async countUsersByFilters(filters: Partial<UserFilterDto>): Promise<number> {
+    return this.userRepository.count(filters);
   }
 }

@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@base/infrastructure/database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HealthModule } from '@module/healthCheck/health.module';
@@ -7,7 +7,7 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { LoggerModule } from 'nestjs-pino';
 //import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { APP_FILTER, ModuleRef } from '@nestjs/core';
+import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionsFilter } from '@shared/filters/global-exception.filter';
 import { AuthModule } from '@module/auth/auth.module';
 
@@ -71,11 +71,6 @@ const GlobalFilterProvider = {
   ], // Importa DatabaseModule
   providers: [CommandBus, GlobalFilterProvider],
 })
-export class AppModule implements OnModuleInit {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly moduleRef: ModuleRef,
-  ) {}
-
-  onModuleInit() {}
+export class AppModule {
+  constructor() {}
 }

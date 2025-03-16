@@ -14,11 +14,16 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   login(@Req() req: RequestWithUser) {
-    return this.authService.signIn(req.user.email);
+    return this.authService.generateTokensForUser(req.user.id);
   }
   @Post('register')
   async register(@Body() registerRequestDto: RegisterRequestDto) {
     const { username, email, password } = registerRequestDto;
     return this.authService.signUp(username, email, password);
+  }
+  @Post('refresh-token')
+  async refreshToken(@Body() refreshTokenDto: { refreshToken: string }) {
+    const { refreshToken } = refreshTokenDto;
+    return this.authService.refreshToken(refreshToken);
   }
 }

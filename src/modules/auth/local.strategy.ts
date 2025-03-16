@@ -8,7 +8,6 @@ import { LocalAuthResponseDto } from './dto/local-auth.response';
 @Injectable()
 export class LocalAuthStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({
       usernameField: 'email',
     } as IStrategyOptions);

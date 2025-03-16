@@ -6,6 +6,8 @@ import { GroupMapper } from './group.mapper';
 import { UserDetail } from '@module/users/domain/entities/user-detail';
 import { UserDetailOrmEntity } from '../entities/user-detail.orm-entity';
 import { Password } from '@module/users/domain/value-objects/password.vo';
+import { Email } from '@module/users/domain/value-objects/email.vo';
+import { UserId } from '@module/users/domain/value-objects/user-id.vo';
 
 // modules/users/infrastructure/mappers/user.mapper.ts
 @Injectable()
@@ -28,13 +30,16 @@ export class UserMapper {
       orm.details ?? new UserDetailOrmEntity(),
     );
 
-    return User.create({
-      username: orm.username,
-      email: orm.email,
-      password: Password.fromHashed(orm.password),
-      groups: groups,
-      details: details,
-    });
+    return User.reconstitute(
+      UserId.create(orm.id),
+      orm.username,
+      Email.create(orm.email),
+      Password.fromHashed(orm.password),
+      orm.isActive,
+      orm.isEmailVerified,
+      groups,
+      details,
+    );
   }
 
   /**

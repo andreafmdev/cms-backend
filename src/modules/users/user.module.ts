@@ -8,7 +8,7 @@ import { UserRepository } from '@userModule/infrastructure/repositories/user.rep
 import { DatabaseModule } from '@base/infrastructure/database/database.module';
 import { UsersController } from './user.controller';
 import { UserDetailOrmEntity } from '@userModule/infrastructure/entities/user-detail.orm-entity';
-import { GetUsersHandler } from '@module/users/application/queries/get-users/get-users.handler';
+import { SearchUsersHandler } from '@module/users/application/queries/search-users/search-users.handler';
 import { UserMapper } from '@module/users/infrastructure/mapper/user-mapper';
 import { SignUpHandler } from './application/commands/sign-up/sign-up.handler';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -25,6 +25,7 @@ import { UserService } from './application/services/user.service';
 import { GroupController } from './group.controller';
 import { MailerModule } from '@module/mailer/mailer.module';
 import { AuthModule } from '@module/auth/auth.module';
+import { GetUsersHandler } from './application/queries/get-users/get-users.handler';
 const Entities = [
   UserOrmEntity,
   GroupOrmEntity,
@@ -32,7 +33,7 @@ const Entities = [
   UserDetailOrmEntity,
 ];
 const CommandHandlers = [SignUpHandler, CreateGroupHandler];
-const QueryHandlers = [GetUsersHandler, GetGroupsHandler];
+const QueryHandlers = [SearchUsersHandler, GetGroupsHandler, GetUsersHandler];
 const Services = [GroupService, UserService];
 const Repositories = [GroupRepository, UserRepository, PermissionRepository];
 const Mappers = [GroupMapper, PermissionMapper, UserMapper, UserDetailMapper];

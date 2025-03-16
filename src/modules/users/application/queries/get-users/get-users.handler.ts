@@ -1,44 +1,48 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetUsersQuery } from '@module/users/application/queries/get-users/get-users.query';
-import { GetUsersQueryResult } from '@module/users/application/queries/get-users/get-users.response.dto';
-import { UserRepository } from '@userModule/infrastructure/repositories/user.repository';
-import { plainToInstance } from 'class-transformer';
-import { UserMapper } from '@module/users/infrastructure/mapper/user-mapper';
-import { UserFilterDto } from '../../dto/user-filter.dto';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { UserService } from '../../services/user.service';
+import { GetUsersResponseDto } from './get-users.response';
+import { plainToInstance } from 'class-transformer';
+import { paginate } from '@shared/helpers/pagination.helper';
+import { UserFilterDto } from '../../dto/user-filter.dto';
+import { PaginatedResponseDto } from '@shared/dto/paginated.response.dto';
+
 @QueryHandler(GetUsersQuery)
 export class GetUsersHandler implements IQueryHandler<GetUsersQuery> {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly userMapper: UserMapper,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
-  async execute(query: GetUsersQuery): Promise<GetUsersQueryResult[]> {
-    let usersResults: GetUsersQueryResult[] = [];
+  async execute(
+    query: GetUsersQuery,
+  ): Promise<PaginatedResponseDto<GetUsersResponseDto>> {
+    let usersResults: GetUsersResponseDto[] = [];
     let filters: Partial<UserFilterDto> = {};
     if (query.filters) {
       filters = query.filters;
     }
-    const users = await this.userService.findUsersByFilters(filters);
-
+    const [users, totalUsers] = await Promise.all([
+      this.userService.findUsersByFilters(filters),
+      this.userService.countUsersByFilters(filters),
+    ]);
     usersResults = users.map((user) =>
-      plainToInstance(GetUsersQueryResult, {
-        id: user.getId().toString(),
+      plainToInstance(GetUsersResponseDto, {
+        id: user.getId().toString() ?? '',
         username: user.getUsername(),
         email: user.getEmail().toString(),
-        details: {
-          address: user.getDetails().getAddress(),
-          phoneNumber: user.getDetails().getPhoneNumber(),
-          profilePictureUrl: user.getDetails().getProfilePictureUrl(),
-          biography: user.getDetails().getBiography(),
-        },
         groups: user.getGroups().map((group) => ({
-          id: group.getId().toString(),
-          name: group.getName() ?? '',
+          name: group.getName(),
+          permissions: group.getPermissions().map((permission) => ({
+            name: permission.getName(),
+          })),
         })),
       }),
     );
-    return usersResults;
+    const paginatedUsers: PaginatedResponseDto<GetUsersResponseDto> =
+      paginate<GetUsersResponseDto>(
+        usersResults,
+        totalUsers,
+        filters.page!,
+        filters.limit!,
+      );
+    return paginatedUsers;
   }
 }

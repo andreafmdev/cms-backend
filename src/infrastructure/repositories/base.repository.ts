@@ -64,12 +64,21 @@ export abstract class BaseRepository<
       where: filters as FindOptionsWhere<OrmEntity>,
     });
   }
-  async findAllByFilters<FilterType>(
+  async findAllByFilters<FilterType extends { page?: number; limit?: number }>(
     filters: FilterType,
   ): Promise<OrmEntity[]> {
-    return this.repository.find({
-      where: filters as FindOptionsWhere<OrmEntity>,
-    });
+    const { page, limit, ...whereFilters } = filters;
+
+    const options: FindManyOptions<OrmEntity> = {
+      where: whereFilters as FindOptionsWhere<OrmEntity>,
+    };
+    // Apply pagination only if both page and limit are provided
+    if (page !== undefined && page > 0 && limit !== undefined && limit > 0) {
+      options.skip = (page - 1) * limit;
+      options.take = limit;
+    }
+
+    return this.repository.find(options);
   }
   private hasToStringMethod(id: unknown): id is { toString(): string } {
     return (
@@ -78,5 +87,19 @@ export abstract class BaseRepository<
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       typeof (id as any).toString === 'function'
     );
+  }
+  async count<
+    FilterType extends { page?: number | string; limit?: number | string },
+  >(filters?: FilterType): Promise<number> {
+    if (filters) {
+      // Crea una copia dei filtri senza page e limit
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { page, limit, ...whereFilters } = filters;
+
+      return this.repository.count({
+        where: whereFilters as FindOptionsWhere<OrmEntity>,
+      });
+    }
+    return this.repository.count();
   }
 }

@@ -1,12 +1,7 @@
-import {
-  IsBoolean,
-  IsEmail,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsUUID } from 'class-validator';
+import { BaseFilterDto } from '@shared/dto/base.filter.dto';
 
-export class UserFilterDto {
+export class UserFilterDto extends BaseFilterDto {
   @IsOptional()
   @IsUUID()
   id?: string;
@@ -18,8 +13,4 @@ export class UserFilterDto {
   @IsOptional()
   @IsString()
   username?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
 }

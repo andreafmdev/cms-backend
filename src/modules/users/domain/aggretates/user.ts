@@ -50,6 +50,7 @@ export class User extends AggregateRoot {
     details?: UserDetail;
     isActive?: boolean;
     isEmailVerified?: boolean;
+    applyEvents?: boolean;
   }): User {
     const userId = UserId.create();
     const user = new User(
@@ -62,9 +63,11 @@ export class User extends AggregateRoot {
       props.groups ?? [],
       props.details ?? UserDetail.createDefault(),
     );
-    user.apply(
-      new UserSignedUpDomainEvent(userId, props.email, props.username),
-    );
+    if (props.applyEvents ?? true) {
+      user.apply(
+        new UserSignedUpDomainEvent(userId, props.email, props.username),
+      );
+    }
 
     return user;
   }
@@ -170,5 +173,39 @@ export class User extends AggregateRoot {
   }
   createPassword(password: string): Password {
     return Password.fromPlaintext(password);
+  }
+
+  /**
+   * Reconstitutes a user from its properties
+   * @param id - The ID of the user
+   * @param username - The username of the user
+   * @param email - The email of the user
+   * @param password - The password of the user
+   * @param isActive - Whether the user is active
+   * @param isEmailVerified - Whether the user's email is verified
+   * @param groups - The groups of the user
+   * @param details - The details of the user
+   * @returns A new user with the same properties as the current user but with the new ID
+   */
+  static reconstitute(
+    id: UserId,
+    username: string,
+    email: Email,
+    password: Password,
+    isActive: boolean,
+    isEmailVerified: boolean,
+    groups: Group[],
+    details: UserDetail,
+  ): User {
+    return new User(
+      id,
+      username,
+      email,
+      password,
+      isActive,
+      isEmailVerified,
+      groups,
+      details,
+    );
   }
 }

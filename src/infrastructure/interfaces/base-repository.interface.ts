@@ -10,5 +10,9 @@ export interface IBaseRepository<T, IdType = string | number | Uuid> {
   findAll(options?: FindManyOptions<T>): Promise<T[]>;
   remove(data: T): Promise<T>;
   findOneByFilters<FilterType>(filters: FilterType): Promise<T | null>;
-  findAllByFilters<FilterType>(filters: FilterType): Promise<T[]>;
+  findAllByFilters<FilterType>(
+    filters: FilterType extends { page?: number; limit?: number }
+      ? FilterType
+      : never,
+  ): Promise<T[]>;
 }

@@ -13,11 +13,15 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
-    { bufferLogs: true },
+    { bufferLogs: false },
   );
 
   // ✅ Fastify adapter registration
-  await app.register(cors);
+  await app.register(cors, {
+    origin: [process.env.CORS_ORIGIN || '*', process.env.CORS_ORIGIN_UI || '*'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true, // Importante se usi cookie
+  });
   await app.register(helmet);
   // ✅ Use global filters for handiling exceptions
 
