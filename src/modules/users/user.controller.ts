@@ -6,6 +6,7 @@ import {
   Body,
   Query,
   HttpCode,
+  Param,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { SearchUsersQuery } from '@module/users/application/queries/search-users/search-users.query';
@@ -18,6 +19,8 @@ import { HttpStatus } from '@nestjs/common';
 import { PaginatedResponseDto } from '../../shared/dto/paginated.response.dto';
 import { GetUsersQuery } from './application/queries/get-users/get-users.query';
 import { GetUsersResponseDto } from './application/queries/get-users/get-users.response';
+import { GetUserDetailQuery } from './application/queries/get-user-detail/get-user-detail.query';
+import { GetUserDetailResponseDto } from './application/queries/get-user-detail/get-user-detail.response.dto';
 @Controller('users')
 export class UsersController {
   constructor(private readonly queryBus: QueryBus) {}
@@ -41,7 +44,13 @@ export class UsersController {
       groups: user.groups,
     };
   }
-
+  @Get('detail/:id')
+  @RequireGroup('ADMIN')
+  async GetUserDetail(
+    @Param('id') id: string,
+  ): Promise<GetUserDetailResponseDto> {
+    return await this.queryBus.execute(new GetUserDetailQuery(id));
+  }
   @Get()
   @RequireGroup('ADMIN')
   async GetAllUsers(

@@ -9,12 +9,19 @@ import { SeederOptions } from 'typeorm-extension';
 import UserSeeder from '@userModule/infrastructure/seeds/user.seed';
 import UserDetailFactory from '@userModule/infrastructure/factories/user-details.factory';
 import { UserDetailOrmEntity } from '@module/users/infrastructure/entities/user-detail.orm-entity';
-
+import { ProductEntities } from '@module/productCatalog/infrastructure/datasource/product-data-source';
+import ProductCatalogSeeder from '@module/productCatalog/infrastructure/seeders/product-catalog.seeder';
 const options: SeederOptions = {
-  seeds: [UserSeeder], // ✅ Path per i seed
+  seeds: [UserSeeder, ProductCatalogSeeder], // ✅ Path per i seed
   factories: [UserDetailFactory], // ✅ Path per le factory
 };
 dotenv.config();
+const UserEntities = [
+  UserOrmEntity,
+  UserDetailOrmEntity,
+  GroupOrmEntity,
+  PermissionOrmEntity,
+];
 
 const PostGresDataSource = new DataSource({
   ...options,
@@ -25,12 +32,8 @@ const PostGresDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'password',
   database: process.env.DB_NAME || 'my_database',
   // ✅ Percorso corretto per le entità
-  entities: [
-    UserOrmEntity,
-    UserDetailOrmEntity,
-    GroupOrmEntity,
-    PermissionOrmEntity,
-  ], // ✅ Carica solo ORM Entities
+
+  entities: [...UserEntities, ...ProductEntities], // ✅ Carica solo ORM Entities
 
   // ✅ Percorso corretto per le migrazioni
   migrations: [path.join(__dirname, '../database/migrations/*.{ts,js}')],

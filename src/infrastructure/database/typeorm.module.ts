@@ -9,6 +9,13 @@ import PostGresDataSource from '../datasource/data-source';
       provide: DataSource,
       useFactory: async () => {
         try {
+          if (process.env.NODE_ENV === 'development') {
+            console.log(
+              '✅ Entities loaded:',
+              PostGresDataSource.options.entities?.length,
+              PostGresDataSource.options.entities,
+            );
+          }
           if (!PostGresDataSource.isInitialized) {
             await PostGresDataSource.initialize();
             console.log('✅ Database connected successfully');

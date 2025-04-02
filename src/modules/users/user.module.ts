@@ -26,6 +26,7 @@ import { GroupController } from './group.controller';
 import { MailerModule } from '@module/mailer/mailer.module';
 import { AuthModule } from '@module/auth/auth.module';
 import { GetUsersHandler } from './application/queries/get-users/get-users.handler';
+import { GetUserDetailHandler } from './application/queries/get-user-detail/get-user-detail.handler';
 const Entities = [
   UserOrmEntity,
   GroupOrmEntity,
@@ -33,7 +34,12 @@ const Entities = [
   UserDetailOrmEntity,
 ];
 const CommandHandlers = [SignUpHandler, CreateGroupHandler];
-const QueryHandlers = [SearchUsersHandler, GetGroupsHandler, GetUsersHandler];
+const QueryHandlers = [
+  SearchUsersHandler,
+  GetGroupsHandler,
+  GetUsersHandler,
+  GetUserDetailHandler,
+];
 const Services = [GroupService, UserService];
 const Repositories = [GroupRepository, UserRepository, PermissionRepository];
 const Mappers = [GroupMapper, PermissionMapper, UserMapper, UserDetailMapper];
