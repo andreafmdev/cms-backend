@@ -39,6 +39,7 @@ export abstract class BaseDomainEntity<T extends EntityId<any>> {
     if (this.id !== null) {
       throw new Error('Entity already has an ID');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (this as any).id = id;
   }
   /** Returns entity creation timestamp */

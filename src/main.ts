@@ -6,10 +6,13 @@ import {
 } from '@nestjs/platform-fastify';
 import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
 //import { LoggerMiddleware } from '@shared/middleware/logger.middleware';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
+  //  Use FastifyAdapter
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
@@ -22,7 +25,17 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true, // Importante se usi cookie
   });
-  await app.register(helmet);
+  await app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [`'self'`],
+        styleSrc: [`'self'`, `'unsafe-inline'`],
+        imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
+        scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+      },
+    },
+  });
+
   // ✅ Use global filters for handiling exceptions
 
   // ✅ Implementa il middleware correttamente per Fastify
@@ -34,6 +47,23 @@ async function bootstrap() {
       const logger = new LoggerMiddleware();
       logger.use(req, res, () => {});
     })*/
+
+  //#region swagger
+  const config = new DocumentBuilder()
+    .setTitle('Tamagni Piano Store')
+    .setDescription('This is the API for the Tamagni Piano Store')
+    .addTag('products')
+    .addTag('users')
+    .addTag('auth')
+    .addTag('health')
+    .addBearerAuth()
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
+  //#endregion
+
   await app.init();
 
   await app.listen(process.env.PORT ?? 3000);

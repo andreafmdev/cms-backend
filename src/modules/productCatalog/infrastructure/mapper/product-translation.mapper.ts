@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 
-import { ProductTranslationId } from '@module/productCatalog/domain/value-objects/product-translation-id';
 import { ProductTranslation } from '@module/productCatalog/domain/entities/product-translation';
 import { ProductTranslationOrmEntity } from '../entities/product-translation.orm-entity';
 @Injectable()
@@ -10,9 +9,9 @@ export class ProductTranslationMapper {
    * Map an ORM entity to a domain entity
    */
   toDomain(orm: ProductTranslationOrmEntity): ProductTranslation {
-    const productTranslationId = ProductTranslationId.create(orm.id);
     const productTranslation: ProductTranslation =
-      ProductTranslation.reconstitute(productTranslationId, {
+      ProductTranslation.reconstitute({
+        id: orm.id,
         languageCode: orm.languageCode,
         name: orm.name,
         description: orm.description,
@@ -24,7 +23,7 @@ export class ProductTranslationMapper {
    */
   toPersistence(domainEntity: ProductTranslation): ProductTranslationOrmEntity {
     const orm = new ProductTranslationOrmEntity();
-    orm.id = domainEntity.getId().toString();
+    orm.id = domainEntity.getId()!.getNumberValue();
     orm.languageCode = domainEntity.getLanguageCode();
     orm.name = domainEntity.getName();
     orm.description = domainEntity.getDescription();

@@ -4,7 +4,9 @@ import { DomainEvent } from './DomainEvent';
 /**
  * Base class for aggregate roots in the domain model
  */
-export abstract class AggregateRoot extends BaseDomainEntity<EntityId> {
+export abstract class AggregateRoot<
+  T extends EntityId,
+> extends BaseDomainEntity<T> {
   /** List of domain events that occurred */
   private _domainEvents: DomainEvent[] = [];
 

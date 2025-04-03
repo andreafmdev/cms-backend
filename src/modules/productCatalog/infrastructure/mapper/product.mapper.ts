@@ -1,7 +1,6 @@
 import { Product } from '@module/productCatalog/domain/aggregates/product';
 import { Injectable } from '@nestjs/common';
 import { ProductOrmEntity } from '../entities/product.orm-entity';
-import { ProductId } from '@module/productCatalog/domain/value-objects/product-id';
 import { ProductTranslation } from '@module/productCatalog/domain/entities/product-translation';
 import { ProductTranslationMapper } from './product-translation.mapper';
 @Injectable()
@@ -13,23 +12,26 @@ export class ProductMapper {
    * Map an ORM entity to a domain entity
    */
   toDomain(orm: ProductOrmEntity): Product {
-    const productId = ProductId.create(orm.id);
     const translations: ProductTranslation[] = orm.translations.map((t) =>
       this.productTranslationMapper.toDomain(t),
     );
-    return Product.reconstitute(
-      productId,
+    return Product.reconstitute({
+      id: orm.id,
       translations,
-      orm.price,
-      orm.isAvailable,
-    );
+      price: orm.price,
+      isAvailable: orm.isAvailable,
+      image: '',
+      brand: undefined,
+      category: undefined,
+      productAttributes: [],
+    });
   }
   /**
    * Map a domain entity to an ORM entity
    */
   toPersistence(domainEntity: Product): ProductOrmEntity {
     const orm = new ProductOrmEntity();
-    orm.id = domainEntity.getId().toString();
+    orm.id = domainEntity.getId()!.getNumberValue();
     orm.price = domainEntity.getPrice();
     orm.isAvailable = domainEntity.getIsAvailable();
     orm.translations = domainEntity

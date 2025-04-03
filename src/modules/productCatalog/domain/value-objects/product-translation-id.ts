@@ -13,7 +13,9 @@ export class ProductTranslationId implements EntityId<IntId> {
   getValue(): IntId {
     return this.value;
   }
-
+  getNumberValue(): number {
+    return this.value.getValue();
+  }
   toString(): string {
     return this.value.toString();
   }

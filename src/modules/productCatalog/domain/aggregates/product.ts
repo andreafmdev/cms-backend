@@ -6,7 +6,7 @@ import { Category } from '../entities/category';
 import { ProductAttribute } from '../entities/product-attribute';
 const DEFAULT_LANGUAGE_CODE = 'it';
 
-export class Product extends AggregateRoot {
+export class Product extends AggregateRoot<ProductId> {
   private price: number;
   private isAvailable: boolean;
   private image: string;

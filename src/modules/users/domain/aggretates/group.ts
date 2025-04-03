@@ -2,7 +2,7 @@ import { Permission } from '../entities/permission';
 import { AggregateRoot } from '@shared/kernel/AggregateRoot';
 import { GroupId } from '../value-objects/group-id.vo';
 
-export class Group extends AggregateRoot {
+export class Group extends AggregateRoot<GroupId> {
   //#region PROPERTIES
   private readonly name: string;
   private readonly permissions: Permission[];

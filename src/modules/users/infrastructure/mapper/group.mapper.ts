@@ -26,7 +26,7 @@ export class GroupMapper {
    */
   toPersistence(domainEntity: Group): GroupOrmEntity {
     const orm = new GroupOrmEntity();
-    orm.id = domainEntity.getId().toString();
+    orm.id = domainEntity.getId()!.toString();
     orm.name = domainEntity.getName();
     orm.permissions = domainEntity
       .getPermissions()

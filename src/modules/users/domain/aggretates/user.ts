@@ -10,7 +10,7 @@ import { Password } from '../value-objects/password.vo';
 /**
  * User aggregate root entity
  */
-export class User extends AggregateRoot {
+export class User extends AggregateRoot<UserId> {
   //#region Properties
   private isActive: boolean;
   private isEmailVerified: boolean;
@@ -31,7 +31,7 @@ export class User extends AggregateRoot {
     groups: Group[],
     details: UserDetail,
   ) {
-    super(id);
+    super(id ?? null);
     this.username = username;
     this.email = email;
     this.password = password;
