@@ -1,11 +1,21 @@
-import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
-import { Column, Entity, JoinColumn, ManyToOne, Relation } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Relation,
+} from 'typeorm';
 import { CategoryOrmEntity } from './category.orm-entity';
 
 @Entity('category_translations')
-export class CategoryTranslationOrmEntity extends BaseOrmEntity {
-  @Column({ comment: 'Category ID', type: 'uuid' })
-  categoryId: string;
+export class CategoryTranslationOrmEntity extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({ comment: 'Category ID', type: 'numeric' })
+  categoryId: number;
 
   @Column({ comment: 'Language code', type: 'varchar', length: 2 })
   languageCode: string;
@@ -15,7 +25,7 @@ export class CategoryTranslationOrmEntity extends BaseOrmEntity {
 
   //#region Relations
   @ManyToOne(() => CategoryOrmEntity, (category) => category.translations)
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({ name: 'category_id' })
   category: Relation<CategoryOrmEntity>;
   //#endregion
 }

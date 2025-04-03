@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ProductMapper } from '../infrastructure/mapper/product.mapper';
-import { ProductId } from '../domain/value-objects/product-id';
-import { Product } from '../domain/aggregates/product';
-import { IProductRepository } from '../domain/repositories/product-repository.interface';
+import { ProductMapper } from '@productCatalogModule/infrastructure/mapper/product.mapper';
+import { ProductId } from '@productCatalogModule/domain/value-objects/product-id';
+import { Product } from '@productCatalogModule/domain/aggregates/product';
+import { IProductRepository } from '@productCatalogModule/domain/repositories/product-repository.interface';
 
 @Injectable()
 export class ProductService {

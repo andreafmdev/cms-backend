@@ -11,7 +11,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-
+    "types": ["@types/jest"],
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
@@ -24,13 +24,16 @@
       "@shared/*": ["src/shared/*"],
       "@config/*": ["src/config/*"],
       "@userModule/*": ["src/modules/users/*"],
-      "@productCatalog/*": ["src/modules/productCatalog/*"],
+      "@productCatalogModule/*": ["src/modules/productCatalog/*"],
       "@authModule/*": ["src/modules/auth/*"],
       "@healthModule/*": ["src/modules/healthCheck/*"],
-      "@/*": ["src/*"],
+      "@/*": ["src/*"]
     }
   },
 
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "jest.config.ts"
+  ],
   "exclude": ["node_modules"]
 }

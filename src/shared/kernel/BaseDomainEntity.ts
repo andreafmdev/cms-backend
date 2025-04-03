@@ -18,22 +18,29 @@ export abstract class BaseDomainEntity<T extends EntityId<any>> {
   protected readonly createdAt: Date;
   protected updatedAt: Date;
 
-  protected constructor(id: T) {
+  protected constructor(id: T | null) {
     this.createdAt = new Date();
     this.updatedAt = new Date();
-    this.id = id;
+    this.id = id as T;
   }
 
   /** Returns the entity ID */
-  public getId(): T {
+  public getId(): T | null {
     return this.id;
   }
 
   /** Returns ID as string */
   public getStringId(): string {
-    return this.id.toString();
+    return this.id?.toString() || '';
   }
 
+  /** Assigns an ID to the entity */
+  protected assignId(id: T): void {
+    if (this.id !== null) {
+      throw new Error('Entity already has an ID');
+    }
+    (this as any).id = id;
+  }
   /** Returns entity creation timestamp */
   public getCreatedAt(): Date {
     return this.createdAt;

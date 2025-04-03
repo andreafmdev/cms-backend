@@ -7,7 +7,7 @@ import { ProductAttributeValueOrmEntity } from './infrastructure/entities/produc
 import { ProductTranslationOrmEntity } from './infrastructure/entities/product-translation.orm-entity';
 
 import { ProductRepository } from './infrastructure/repositories/product-repository';
-import { ProductService } from './application/product.service';
+import { ProductService } from './application/services/product.service';
 import { ProductMapper } from './infrastructure/mapper/product.mapper';
 import ProductCatalogSeeder from './infrastructure/seeders/product-catalog.seeder';
 const mappers = [ProductMapper];

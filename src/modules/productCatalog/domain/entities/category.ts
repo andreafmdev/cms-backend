@@ -6,12 +6,12 @@ export class Category extends BaseDomainEntity<CategoryId> {
   private description: string;
   private image: string;
   private constructor(
-    id: CategoryId,
     name: string,
     description: string,
     image: string,
+    id?: CategoryId,
   ) {
-    super(id);
+    super(id ?? null);
     this.name = name;
     this.description = description;
     this.image = image;
@@ -26,12 +26,7 @@ export class Category extends BaseDomainEntity<CategoryId> {
     description: string;
     image: string;
   }): Category {
-    const category = new Category(
-      CategoryId.create(),
-      props.name,
-      props.description,
-      props.image,
-    );
+    const category = new Category(props.name, props.description, props.image);
     return category;
   }
 
@@ -54,13 +49,18 @@ export class Category extends BaseDomainEntity<CategoryId> {
    * @param image - The image of the category
    * @returns The reconstituted category
    */
-  static reconstitute(
-    id: CategoryId,
-    name: string,
-    description: string,
-    image: string,
-  ): Category {
-    const category = new Category(id, name, description, image);
+  static reconstitute(props: {
+    id: number;
+    name: string;
+    description: string;
+    image: string;
+  }): Category {
+    const category = new Category(
+      props.name,
+      props.description,
+      props.image,
+      CategoryId.create(props.id),
+    );
     return category;
   }
 }

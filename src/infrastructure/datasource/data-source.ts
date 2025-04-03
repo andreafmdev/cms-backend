@@ -11,6 +11,8 @@ import UserDetailFactory from '@userModule/infrastructure/factories/user-details
 import { UserDetailOrmEntity } from '@module/users/infrastructure/entities/user-detail.orm-entity';
 import { ProductEntities } from '@module/productCatalog/infrastructure/datasource/product-data-source';
 import ProductCatalogSeeder from '@module/productCatalog/infrastructure/seeders/product-catalog.seeder';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+
 const options: SeederOptions = {
   seeds: [UserSeeder, ProductCatalogSeeder], // ✅ Path per i seed
   factories: [UserDetailFactory], // ✅ Path per le factory
@@ -40,6 +42,7 @@ const PostGresDataSource = new DataSource({
   migrationsTableName: 'migrations',
   synchronize: false,
   logging: process.env.NODE_ENVIRONMENT === 'development',
+  namingStrategy: new SnakeNamingStrategy(),
 });
 /*console.log('✅ TypeORM Config:', PostGresDataSource.options);
 console.log('✅ Entities Loaded:', PostGresDataSource.options.entities);

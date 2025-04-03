@@ -1,10 +1,11 @@
-import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
 import {
+  BaseEntity,
   Column,
   Entity,
   Index,
   JoinColumn,
   ManyToOne,
+  PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
 import { ProductOrmEntity } from './product.orm-entity';
@@ -12,9 +13,12 @@ import { ProductOrmEntity } from './product.orm-entity';
 @Entity('product_translations')
 //composite unique index
 @Index(['productId', 'languageCode'], { unique: true })
-export class ProductTranslationOrmEntity extends BaseOrmEntity {
-  @Column({ comment: 'Product ID', type: 'uuid' })
-  productId: string;
+export class ProductTranslationOrmEntity extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({ comment: 'Product ID', type: 'numeric' })
+  productId: number;
 
   @Column({ comment: 'Language code', type: 'varchar', length: 2 })
   languageCode: string;
@@ -27,7 +31,7 @@ export class ProductTranslationOrmEntity extends BaseOrmEntity {
 
   //#region Relations
   @ManyToOne(() => ProductOrmEntity, (product) => product.translations)
-  @JoinColumn({ name: 'productId' })
+  @JoinColumn({ name: 'product_id' })
   product: Relation<ProductOrmEntity>;
   //#endregion
 }

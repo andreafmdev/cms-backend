@@ -4,7 +4,9 @@ export class IntId {
       throw new Error('ID must be a positive integer');
     }
   }
-
+  static create(value: number): IntId {
+    return new IntId(value);
+  }
   public getValue(): number {
     return this.value;
   }

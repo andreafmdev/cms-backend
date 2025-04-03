@@ -1,11 +1,28 @@
-import { BaseOrmEntity } from '@base/infrastructure/entities/base.orm';
-import { Column, Entity, JoinColumn, ManyToOne, Relation } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Relation,
+} from 'typeorm';
 import { ProductAttributeOrmEntity } from './product-attribute.orm-entity';
 
 @Entity('product_attribute_translations')
-export class ProductAttributeTranslationOrmEntity extends BaseOrmEntity {
-  @Column({ comment: 'Product attribute ID', type: 'uuid' })
-  productAttributeId: string;
+//composite unique index
+@Index(['productAttributeId', 'languageCode'], { unique: true })
+export class ProductAttributeTranslationOrmEntity extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({
+    name: 'product_attribute_id',
+    comment: 'Product attribute ID',
+    type: 'numeric',
+  })
+  productAttributeId: number;
 
   @Column({ comment: 'Language code', type: 'varchar', length: 2 })
   languageCode: string;
@@ -15,11 +32,11 @@ export class ProductAttributeTranslationOrmEntity extends BaseOrmEntity {
     type: 'varchar',
     length: 100,
   })
-  name: string;
+  value: string;
 
   //#region Relations
   @ManyToOne(() => ProductAttributeOrmEntity, (attribute) => attribute.values)
-  @JoinColumn({ name: 'productAttributeId' })
+  @JoinColumn({ name: 'product_attribute_id' })
   attribute: Relation<ProductAttributeOrmEntity>;
   //#endregion
 }

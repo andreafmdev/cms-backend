@@ -1,26 +1,35 @@
 import { ProductTranslationId } from '../value-objects/product-translation-id';
 import { BaseDomainEntity } from '@shared/kernel/BaseDomainEntity';
-interface ProductTranslationProps {
-  languageCode: string;
-  name: string;
-  description: string;
-}
 
 export class ProductTranslation extends BaseDomainEntity<ProductTranslationId> {
   private languageCode: string;
   private name: string;
   private description: string;
-  constructor(id: ProductTranslationId, props: ProductTranslationProps) {
-    super(id);
-    this.languageCode = props.languageCode;
-    this.name = props.name;
-    this.description = props.description;
+  constructor(
+    languageCode: string,
+    name: string,
+    description: string,
+    id?: ProductTranslationId,
+  ) {
+    super(id ?? null);
+    this.languageCode = languageCode;
+    this.name = name;
+    this.description = description;
   }
   //#region BUSINESS LOGIC
   // ✅ Factory method
-  static create(props: ProductTranslationProps): ProductTranslation {
-    const id = ProductTranslationId.create(); // genera UUID se non passato
-    return new ProductTranslation(id, props);
+  static create(props: {
+    languageCode: string;
+    name: string;
+    description: string;
+  }): ProductTranslation {
+    //!CHECK IF PROPS ARE NOT NULL OR INVALID
+
+    return new ProductTranslation(
+      props.languageCode,
+      props.name,
+      props.description,
+    );
   }
   //#endregion
   //#region GETTERS
@@ -37,11 +46,18 @@ export class ProductTranslation extends BaseDomainEntity<ProductTranslationId> {
 
   //#endregion
   //#region RECONSITUTE
-  static reconstitute(
-    id: ProductTranslationId,
-    props: ProductTranslationProps,
-  ): ProductTranslation {
-    return new ProductTranslation(id, props);
+  static reconstitute(props: {
+    id: number;
+    languageCode: string;
+    name: string;
+    description: string;
+  }): ProductTranslation {
+    return new ProductTranslation(
+      props.languageCode,
+      props.name,
+      props.description,
+      ProductTranslationId.create(props.id),
+    );
   }
   //#endregion
 }
