@@ -50,6 +50,11 @@ async function bootstrap() {
 
   //#region swagger
   const config = new DocumentBuilder()
+    .addSecurity('basic', {
+      type: 'http',
+      scheme: 'basic',
+    })
+    .addBearerAuth()
     .setTitle('Tamagni Piano Store')
     .setDescription('This is the API for the Tamagni Piano Store')
     .addTag('products')
