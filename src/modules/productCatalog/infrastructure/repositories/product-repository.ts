@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ProductMapper } from '../mapper/product.mapper';
+import { ProductMapper } from '../mapper/product-mapper';
 import { IProductRepository } from '@module/productCatalog/domain/repositories/product-repository.interface';
 import { ProductId } from '@module/productCatalog/domain/value-objects/product-id';
 import { BaseRepository } from '@base/infrastructure/repositories/base.repository';
@@ -10,15 +10,15 @@ import { Product } from '@module/productCatalog/domain/aggregates/product';
 
 @Injectable()
 export class ProductRepository
-  extends BaseRepository<ProductOrmEntity, ProductId>
+  extends BaseRepository<Product, ProductOrmEntity, ProductId>
   implements IProductRepository
 {
   constructor(
     @InjectRepository(ProductOrmEntity)
     repo: Repository<ProductOrmEntity>,
-    private readonly mapper: ProductMapper,
+    mapper: ProductMapper,
   ) {
-    super(repo);
+    super(repo, mapper);
   }
   /**
    * Find a product by its ID
@@ -27,7 +27,7 @@ export class ProductRepository
    */
   async findProductById(id: ProductId): Promise<Product | null> {
     const productOrm = await super.findById(id);
-    return productOrm ? this.mapper.toDomain(productOrm) : null;
+    return productOrm;
   }
   /**
    * Create a new product
@@ -35,8 +35,8 @@ export class ProductRepository
    * @returns The created product domain entity
    */
   async createProduct(product: Product): Promise<Product> {
-    const productOrm = this.mapper.toPersistence(product);
-    const createdProductOrm = await super.save(productOrm);
-    return this.mapper.toDomain(createdProductOrm);
+    const newProduct: Product = await super.save(product);
+
+    return newProduct;
   }
 }

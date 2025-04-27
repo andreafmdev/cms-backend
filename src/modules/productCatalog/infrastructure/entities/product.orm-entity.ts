@@ -5,26 +5,47 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Relation,
 } from 'typeorm';
-import { CategoryOrmEntity } from './category.orm-entity';
+import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entities/category.orm-entity';
 import { BrandOrmEntity } from './brand.orm-entity';
 import { ProductImageOrmEntity } from './product-image.orm-entity';
 import { ProductTranslationOrmEntity } from './product-translation.orm-entity';
-import { ProductAttributeValueOrmEntity } from './product-attribute-value.orm-entity';
 import { Audit } from '@base/infrastructure/entities/util/audit.composition';
+import { ProductCategoryAttributeValueOrmEntity } from './product-category-attribute-value.orm-entity';
 
+/**
+ * Product ORM entity
+ * @description This entity represents a product in the database
+ * @extends BaseEntity
+ * @property id - The ID of the product
+ * @property price - The price of the product
+ * @property isAvailable - The availability of the product
+ * @property categoryId - The ID of the category of the product
+ * @property brandId - The ID of the brand of the product
+ * @property audit - The audit information of the product
+ * @property category - The category of the product
+ * @property brand - The brand of the product
+ * @property images - The images of the product
+ * @property attributesValues - The attributes values of the product
+ * @property translations - The translations of the product
+ */
 @Entity('products')
 export class ProductOrmEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryColumn({
+    comment: 'Product ID',
+    type: 'uuid',
+    nullable: false,
+  })
+  id!: string;
 
   @Column({
     comment: 'Product price',
     type: 'decimal',
     precision: 10,
     scale: 2,
+    default: 0,
   })
   price: number;
 
@@ -34,52 +55,67 @@ export class ProductOrmEntity extends BaseEntity {
   @Column({
     name: 'category_id',
     comment: 'Category ID',
-    type: 'numeric',
+    type: 'uuid',
     nullable: false,
   })
-  categoryId!: number;
+  categoryId!: string;
 
-  @Column({ name: 'brand_id', comment: 'Brand ID', type: 'numeric' })
-  brandId: number;
+  @Column({
+    name: 'brand_id',
+    comment: 'Brand ID',
+    type: 'uuid',
+    nullable: false,
+  })
+  brandId!: string;
 
   @Column(() => Audit, { prefix: false })
   audit: Audit;
   //#region Relations
   //relations with category, brand and images
-  @ManyToOne(() => CategoryOrmEntity, (category) => category.products, {
+  @ManyToOne(() => CategoryOrmEntity, {
     eager: true,
     nullable: false,
-    onDelete: 'RESTRICT', // 👈 questo collega esplicitamente la colonna FK
+    onDelete: 'RESTRICT',
   })
-  @JoinColumn({ name: 'category_id' }) // 👈 questo collega esplicitamente la colonna FK
+  @JoinColumn({ name: 'category_id' })
   category: Relation<CategoryOrmEntity>;
 
-  @ManyToOne(() => BrandOrmEntity, (brand) => brand.products)
-  @JoinColumn({ name: 'brand_id' }) // 👈 questo collega esplicitamente la colonna FK
+  @ManyToOne(() => BrandOrmEntity, {
+    eager: true,
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'brand_id' })
   brand: Relation<BrandOrmEntity>;
 
-  @OneToMany(() => ProductImageOrmEntity, (image) => image.product)
-  images: ProductImageOrmEntity[];
+  @OneToMany(() => ProductImageOrmEntity, (image) => image.product, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    eager: true,
+  })
+  images: Relation<ProductImageOrmEntity>[];
 
   @OneToMany(
-    () => ProductAttributeValueOrmEntity,
-    (attribute) => attribute.product,
+    () => ProductCategoryAttributeValueOrmEntity,
+    (attributeValue) => attributeValue.product,
     {
-      eager: true,
-      onDelete: 'CASCADE',
       cascade: true,
+      onDelete: 'CASCADE',
+      eager: true,
     },
   )
-  attributes: ProductAttributeValueOrmEntity[];
+  attributesValues: Relation<ProductCategoryAttributeValueOrmEntity>[];
 
   @OneToMany(
     () => ProductTranslationOrmEntity,
     (translation) => translation.product,
     {
+      eager: true,
       cascade: true,
+      onDelete: 'CASCADE',
     },
   )
-  translations: ProductTranslationOrmEntity[];
+  translations: Relation<ProductTranslationOrmEntity>[];
 
   //#endregion
 }

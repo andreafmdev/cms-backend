@@ -1,17 +1,20 @@
 import { EntityId } from '@shared/kernel/BaseDomainEntity';
-import { IntId } from '@shared/value-object/numeric-id.vo';
+import { Uuid } from '@shared/value-object/uuid.vo';
 
-export class CategoryId implements EntityId<IntId> {
-  private readonly value: IntId;
-  private constructor(private readonly id: IntId) {
+export class CategoryId implements EntityId<Uuid> {
+  private readonly value: Uuid;
+  private constructor(private readonly id: Uuid) {
     this.value = id;
   }
-  static create(value: number): CategoryId {
-    return new CategoryId(IntId.create(value));
+  static create(value?: string): CategoryId {
+    return new CategoryId(value ? Uuid.fromString(value) : Uuid.generate());
   }
 
-  getValue(): IntId {
+  getValue(): Uuid {
     return this.value;
+  }
+  getStringValue(): string {
+    return this.value.toString();
   }
 
   toString(): string {
@@ -20,6 +23,7 @@ export class CategoryId implements EntityId<IntId> {
 
   equals(other: EntityId): boolean {
     if (!other) return false;
-    return this.toString() === other.toString();
+    if (!(other instanceof CategoryId)) return false;
+    return this.getStringValue() === other.getStringValue();
   }
 }

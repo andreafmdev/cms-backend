@@ -42,6 +42,18 @@ export class User extends AggregateRoot<UserId> {
   }
 
   /** Creates a new user */
+  /**
+   * Creates a new user
+   * @param props - The properties of the user
+   * @param props.username - The username of the user
+   * @param props.email - The email of the user
+   * @param props.password - The password of the user
+   * @param props.groups - The groups of the user
+   * @param props.details - The details of the user
+   * @param props.isActive - Whether the user is active
+   * @param props.isEmailVerified - Whether the user's email is verified
+   * @returns A new user
+   */
   static create(props: {
     username: string;
     email: string;
@@ -94,7 +106,7 @@ export class User extends AggregateRoot<UserId> {
   }
 
   getId(): UserId {
-    return super.getId() as UserId;
+    return super.getId();
   }
 
   /** Verifica l'email dell'utente */

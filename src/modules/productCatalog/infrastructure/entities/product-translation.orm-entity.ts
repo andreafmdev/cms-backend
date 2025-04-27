@@ -5,7 +5,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Relation,
 } from 'typeorm';
 import { ProductOrmEntity } from './product.orm-entity';
@@ -14,13 +14,21 @@ import { ProductOrmEntity } from './product.orm-entity';
 //composite unique index
 @Index(['productId', 'languageCode'], { unique: true })
 export class ProductTranslationOrmEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryColumn({
+    name: 'product_id',
+    comment: 'Product ID',
+    type: 'uuid',
+    nullable: false,
+  })
+  productId: string;
 
-  @Column({ comment: 'Product ID', type: 'numeric' })
-  productId: number;
-
-  @Column({ comment: 'Language code', type: 'varchar', length: 2 })
+  @PrimaryColumn({
+    name: 'language_code',
+    comment: 'Language code',
+    type: 'varchar',
+    length: 2,
+    nullable: false,
+  })
   languageCode: string;
 
   @Column({ comment: 'Product name translation', type: 'varchar', length: 100 })
@@ -29,9 +37,12 @@ export class ProductTranslationOrmEntity extends BaseEntity {
   @Column({ comment: 'Product description tralation', type: 'text' })
   description: string;
 
-  //#region Relations
-  @ManyToOne(() => ProductOrmEntity, (product) => product.translations)
+  @ManyToOne(() => ProductOrmEntity, (product) => product.translations, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'product_id' })
   product: Relation<ProductOrmEntity>;
+  //#region Relations
+
   //#endregion
 }

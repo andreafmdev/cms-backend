@@ -1,17 +1,20 @@
 import { EntityId } from '@shared/kernel/BaseDomainEntity';
-import { IntId } from '@shared/value-object/numeric-id.vo';
-
-export class BrandId implements EntityId<IntId> {
-  private readonly value: IntId;
-  private constructor(id: IntId) {
+import { Uuid } from '@shared/value-object/uuid.vo';
+export class BrandId implements EntityId<Uuid> {
+  private readonly value: Uuid;
+  private constructor(id: Uuid) {
     this.value = id;
   }
-  static create(value: number): BrandId {
-    return new BrandId(IntId.create(value));
+  static create(value?: string): BrandId {
+    return new BrandId(value ? Uuid.fromString(value) : Uuid.generate());
   }
 
-  getValue(): IntId {
+  getValue(): Uuid {
     return this.value;
+  }
+
+  getStringValue(): string {
+    return this.value.toString();
   }
 
   toString(): string {

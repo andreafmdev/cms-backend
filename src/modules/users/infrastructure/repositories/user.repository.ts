@@ -5,19 +5,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseRepository } from '@base/infrastructure/repositories/base.repository';
 import { UserId } from '@module/users/domain/value-objects/user-id.vo';
-
+import { UserMapper } from '../mapper/user-mapper';
+import { User } from '@module/users/domain/aggretates/user';
 @Injectable()
 export class UserRepository
-  extends BaseRepository<UserOrmEntity, UserId>
+  extends BaseRepository<User, UserOrmEntity, UserId>
   implements IUserRepository
 {
   constructor(
     @InjectRepository(UserOrmEntity)
-    private readonly ormRepository: Repository<UserOrmEntity>,
+    repo: Repository<UserOrmEntity>,
+    mapper: UserMapper,
   ) {
-    super(ormRepository);
+    super(repo, mapper);
   }
-  async findById(id: UserId): Promise<UserOrmEntity | null> {
+  async findById(id: UserId): Promise<User | null> {
     const user = await super.findById(id);
 
     return user;

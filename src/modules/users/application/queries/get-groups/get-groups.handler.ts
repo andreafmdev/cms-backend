@@ -17,7 +17,7 @@ export class GetGroupsHandler implements IQueryHandler<GetGroupsQuery> {
       plainToInstance(
         GetGroupsResponseDto,
         {
-          id: group.getId()!.toString() ?? '',
+          id: group.getId().toString() ?? '',
           name: group.getName() ?? '',
           permissions: group.getPermissions().map((p) => ({
             name: p.getName() ?? '',

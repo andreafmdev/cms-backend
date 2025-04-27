@@ -56,7 +56,7 @@ export class Group extends AggregateRoot<GroupId> {
     if (this.hasPermission(permission)) {
       return this; // Nessuna modifica se il permesso esiste già
     }
-    return new Group(this.getId() as GroupId, this.name, [
+    return new Group(this.getId(), this.name, [
       ...this.permissions,
       permission,
     ]);
@@ -65,7 +65,7 @@ export class Group extends AggregateRoot<GroupId> {
   /** Rimuove un permesso dal gruppo (immutabilità) */
   removePermission(permissionName: string): Group {
     return new Group(
-      this.getId() as GroupId,
+      this.getId(),
       this.name,
       this.permissions.filter((p) => p.getName() !== permissionName),
     );

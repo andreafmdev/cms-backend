@@ -2,15 +2,15 @@ import { Seeder } from 'typeorm-extension';
 import { DataSource } from 'typeorm';
 import { Logger } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
-import { BrandOrmEntity } from '../entities/brand.orm-entity';
-import { ProductOrmEntity } from '../entities/product.orm-entity';
-import { ProductTranslationOrmEntity } from '../entities/product-translation.orm-entity';
-import { CategoryOrmEntity } from '../entities/category.orm-entity';
-import { CategoryTranslationOrmEntity } from '../entities/category-translation.orm-entity';
-import { ProductAttributeOrmEntity } from '../entities/product-attribute.orm-entity';
-import { ProductAttributeValueOrmEntity } from '../entities/product-attribute-value.orm-entity';
-import { ProductAttributeTranslationOrmEntity } from '../entities/product-attribute-translation.orm-entity';
-import { ProductImageOrmEntity } from '../entities/product-image.orm-entity';
+import { BrandOrmEntity } from '@module/productCatalog/infrastructure/entities/brand.orm-entity';
+import { ProductOrmEntity } from '@module/productCatalog/infrastructure/entities/product.orm-entity';
+import { ProductTranslationOrmEntity } from '@module/productCatalog/infrastructure/entities/product-translation.orm-entity';
+import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entities/category.orm-entity';
+import { CategoryTranslationOrmEntity } from '@module/productCatalog/infrastructure/entities/category-translation.orm-entity';
+import { ProductCategoryAttributeOrmEntity } from '@module/productCatalog/infrastructure/entities/product-category-attribute.orm-entity';
+import { ProductCategoryAttributeValueOrmEntity } from '@module/productCatalog/infrastructure/entities/product-category-attribute-value.orm-entity';
+import { ProductCategoryAttributeTranslationOrmEntity } from '@module/productCatalog/infrastructure/entities/product-category-attribute-translation.orm-entity';
+import { ProductImageOrmEntity } from '@module/productCatalog/infrastructure/entities/product-image.orm-entity';
 
 export default class ProductCatalogSeeder implements Seeder {
   private readonly logger = new Logger(ProductCatalogSeeder.name);
@@ -23,13 +23,13 @@ export default class ProductCatalogSeeder implements Seeder {
       CategoryTranslationOrmEntity,
     );
     const productAttributeRepository = dataSource.getRepository(
-      ProductAttributeOrmEntity,
+      ProductCategoryAttributeOrmEntity,
     );
     const productAttributeTranslationRepository = dataSource.getRepository(
-      ProductAttributeTranslationOrmEntity,
+      ProductCategoryAttributeTranslationOrmEntity,
     );
     const productAttributeValueRepository = dataSource.getRepository(
-      ProductAttributeValueOrmEntity,
+      ProductCategoryAttributeValueOrmEntity,
     );
 
     const productRepository = dataSource.getRepository(ProductOrmEntity);
@@ -50,6 +50,7 @@ export default class ProductCatalogSeeder implements Seeder {
       this.logger.log('⚙️ Creating brands...');
       const brandsToCreate = Array.from({ length: 3 }).map(() => ({
         name: faker.company.name(),
+        id: faker.string.uuid(),
       }));
       const brands = await brandRepository.save(brandsToCreate);
       this.logger.log(`✅ Created ${brands.length} brands`);
@@ -59,41 +60,43 @@ export default class ProductCatalogSeeder implements Seeder {
       const categories = await Promise.all(
         Array.from({ length: 3 }).map(async () => {
           // Crea la categoria
+          const categoryId = faker.string.uuid();
           const category = await categoryRepository.save({
-            name: faker.commerce.department(),
-            description: faker.commerce.productDescription(),
+            id: categoryId,
           });
 
           // Crea le traduzioni per la categoria
           await Promise.all(
-            this.SUPPORTED_LANGUAGES.map(async (languageCode) => {
+            this.SUPPORTED_LANGUAGES.map(async (lang) => {
               return await categoryTranslationRepository.save({
                 categoryId: category.id,
-                languageCode,
+                languageCode: lang,
                 name: faker.commerce.department(),
+                description: faker.commerce.productDescription(),
               });
             }),
           );
           // Crea attributi per la categoria
           const attributeNames = [
-            faker.helpers.arrayElement(['Colore', 'Materiale', 'Dimensione']),
-            faker.helpers.arrayElement(['Peso', 'Potenza', 'Tipo']),
-            faker.helpers.arrayElement(['Marca', 'Modello', 'Anno']),
+            faker.helpers.arrayElement(['Colore']),
+            faker.helpers.arrayElement(['Peso']),
+            faker.helpers.arrayElement(['Marca']),
           ];
 
           // Crea gli attributi per la categoria
           await Promise.all(
             attributeNames.map(async (attributeName) => {
+              const categoryAttributeId = faker.string.uuid();
               const attribute = await productAttributeRepository.save({
+                id: categoryAttributeId,
                 categoryId: category.id,
-                name: attributeName,
               });
 
               // Crea le traduzioni per l'attributo
               await Promise.all(
                 this.SUPPORTED_LANGUAGES.map(async (languageCode) => {
                   return await productAttributeTranslationRepository.save({
-                    productAttributeId: attribute.id,
+                    attributeId: attribute.id,
                     languageCode,
                     value: this.getAttributeTranslation(
                       attributeName,
@@ -124,7 +127,9 @@ export default class ProductCatalogSeeder implements Seeder {
             where: { categoryId: selectedCategory.id },
           });
           // Create Product
+          const productId = faker.string.uuid();
           const product = await productRepository.save({
+            id: productId,
             price: Number(faker.commerce.price({ min: 10, max: 1000 })),
             isAvailable: faker.datatype.boolean(),
             brandId: faker.helpers.arrayElement(brands).id,
@@ -146,6 +151,7 @@ export default class ProductCatalogSeeder implements Seeder {
           const images = await Promise.all(
             Array.from({ length: 3 }).map(async (_, index) => {
               return await productImageRepository.save({
+                id: faker.string.uuid(),
                 productId: product.id,
                 image: faker.image.url(),
                 url: faker.image.url(),
@@ -159,7 +165,7 @@ export default class ProductCatalogSeeder implements Seeder {
               return await productAttributeValueRepository.save({
                 productId: product.id,
                 attributeId: attribute.id,
-                value: this.getRandomAttributeValue(attribute.name),
+                value: faker.commerce.productAdjective(),
               });
             }),
           );
@@ -187,6 +193,9 @@ export default class ProductCatalogSeeder implements Seeder {
       Colore: ['Rosso', 'Blu', 'Verde', 'Nero', 'Bianco'],
       Dimensione: ['S', 'M', 'L', 'XL'],
       Materiale: ['Legno', 'Metallo', 'Plastica', 'Vetro'],
+      Peso: ['100g', '200g', '300g', '400g'],
+      Marca: ['Apple', 'Samsung', 'Sony', 'LG'],
+      Modello: ['iPhone 15', 'Galaxy S23', 'Sony A7', 'LG G9'],
     };
     return faker.helpers.arrayElement(
       valuesByAttribute[attributeName as keyof typeof valuesByAttribute] || [

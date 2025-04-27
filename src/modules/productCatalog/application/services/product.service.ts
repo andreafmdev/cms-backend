@@ -1,24 +1,26 @@
+import { Product } from '@module/productCatalog/domain/aggregates/product';
+import { ProductId } from '@module/productCatalog/domain/value-objects/product-id';
+import { ProductOrmEntity } from '@module/productCatalog/infrastructure/entities/product.orm-entity';
+import { ProductRepository } from '@module/productCatalog/infrastructure/repositories/product-repository';
 import { Injectable } from '@nestjs/common';
-import { ProductMapper } from '@productCatalogModule/infrastructure/mapper/product.mapper';
-import { ProductId } from '@productCatalogModule/domain/value-objects/product-id';
-import { Product } from '@productCatalogModule/domain/aggregates/product';
-import { IProductRepository } from '@productCatalogModule/domain/repositories/product-repository.interface';
+import { FindOptionsWhere } from 'typeorm';
 
 @Injectable()
 export class ProductService {
-  constructor(
-    private readonly productRepository: IProductRepository,
-    private readonly productMapper: ProductMapper,
-  ) {}
+  constructor(private readonly productRepository: ProductRepository) {}
 
   async findProductById(id: ProductId): Promise<Product | null> {
-    const productOrm: Product | null =
-      await this.productRepository.findProductById(id);
-    return productOrm ? productOrm : null;
+    return await this.productRepository.findById(id);
+  }
+  async findAllProducts(): Promise<Product[]> {
+    return await this.productRepository.findAll();
+  }
+  async findProductsByFilters(filters: any): Promise<Product[]> {
+    return await this.productRepository.findAllByCondition(
+      filters as FindOptionsWhere<ProductOrmEntity>,
+    );
   }
   async createProduct(product: Product): Promise<Product> {
-    const createdProductOrm =
-      await this.productRepository.createProduct(product);
-    return createdProductOrm;
+    return await this.productRepository.save(product);
   }
 }

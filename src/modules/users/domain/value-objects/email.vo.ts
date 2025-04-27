@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ValueObject } from '@shared/kernel/value-object.abstract';
+import { ValueObject } from '@shared/kernel/ValueObject';
 
 interface EmailProps {
   value: string;

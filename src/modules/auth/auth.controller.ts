@@ -4,7 +4,7 @@ import { LocalAuthGuard } from './guard/local-auth.guard';
 import { RegisterRequestDto } from './dto/register.request';
 import { LocalAuthResponseDto } from './dto/local-auth.response';
 import { FastifyRequest } from 'fastify';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 interface RequestWithUser extends FastifyRequest {
   user: LocalAuthResponseDto;
 }
@@ -18,7 +18,24 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Login successful',
-    type: LocalAuthResponseDto,
+    schema: {
+      type: 'object',
+      properties: {
+        access_token: { type: 'string' },
+        refresh_token: { type: 'string' },
+      },
+      required: ['access_token', 'refresh_token'],
+    },
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', example: 'test@test.com' },
+        password: { type: 'string', example: 'password123' },
+      },
+      required: ['email', 'password'],
+    },
   })
   login(@Req() req: RequestWithUser) {
     return this.authService.generateTokensForUser(req.user.id);

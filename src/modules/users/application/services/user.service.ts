@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { UserRepository } from '@module/users/infrastructure/repositories/user.repository';
-import { UserMapper } from '@module/users/infrastructure/mapper/user-mapper';
 import { User } from '@module/users/domain/aggretates/user';
 import { UserId } from '@module/users/domain/value-objects/user-id.vo';
 import { Password } from '@module/users/domain/value-objects/password.vo';
@@ -12,24 +11,16 @@ import { UserFilterDto } from '../dto/user-filter.dto';
  */
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly userMapper: UserMapper,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   async findUserById(id: UserId): Promise<User | null> {
-    const userOrm = await this.userRepository.findById(id);
-    return userOrm ? this.userMapper.toDomain(userOrm) : null;
+    const user = await this.userRepository.findById(id);
+    return user ?? null;
   }
-  async findUserByFilters(
-    filters: Partial<UserFilterDto>,
-  ): Promise<User | null> {
-    const userOrm = await this.userRepository.findOneByFilters(filters);
-    return userOrm ? this.userMapper.toDomain(userOrm) : null;
-  }
+
   async findUsersByFilters(filters: Partial<UserFilterDto>): Promise<User[]> {
-    const userOrm = await this.userRepository.findAllByFilters(filters);
-    return userOrm.map((userOrm) => this.userMapper.toDomain(userOrm));
+    const userOrm = await this.userRepository.findAllByCondition(filters);
+    return userOrm;
   }
   async createUser(
     username: string,
@@ -37,7 +28,8 @@ export class UserService {
     password: string,
   ): Promise<User | null> {
     const userPresent = await this.userRepository.findOneByCondition({
-      where: [{ email }, { username }],
+      email,
+      username,
     });
     if (userPresent) {
       throw new BadRequestException('User already exists');
@@ -49,25 +41,24 @@ export class UserService {
       password: Password.fromPlaintext(password),
     });
     //Map user to orm
-    const userOrm = this.userMapper.toPersistence(user);
     //Save user on db
-    await this.userRepository.save(userOrm);
+    await this.userRepository.save(user);
     return user;
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
-    const userOrm = await this.userRepository.findOneByCondition({
-      where: { email },
+    const user = await this.userRepository.findOneByCondition({
+      email,
     });
-    return userOrm ? this.userMapper.toDomain(userOrm) : null;
+    return user ?? null;
   }
   async findOneById(id: UserId): Promise<User | null> {
-    const userOrm = await this.userRepository.findById(id);
-    return userOrm ? this.userMapper.toDomain(userOrm) : null;
+    const user = await this.userRepository.findById(id);
+    return user ?? null;
   }
   async findAllUsers(): Promise<User[]> {
-    const usersOrm = await this.userRepository.findAll();
-    return usersOrm.map((userOrm) => this.userMapper.toDomain(userOrm));
+    const users = await this.userRepository.findAll();
+    return users;
   }
   async countUsersByFilters(filters: Partial<UserFilterDto>): Promise<number> {
     return this.userRepository.count(filters);

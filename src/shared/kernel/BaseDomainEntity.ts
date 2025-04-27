@@ -13,19 +13,22 @@ export interface EntityId<T = Uuid | IntId> {
 /**
  * Base class for all domain entities
  */
-export abstract class BaseDomainEntity<T extends EntityId<any>> {
+export abstract class BaseDomainEntity<T extends EntityId<any> | null = null> {
   private readonly id: T;
   protected readonly createdAt: Date;
   protected updatedAt: Date;
 
-  protected constructor(id: T | null) {
+  protected constructor(id: T) {
+    if (!id) {
+      throw new Error('Entity ID is required');
+    }
     this.createdAt = new Date();
     this.updatedAt = new Date();
     this.id = id as T;
   }
 
   /** Returns the entity ID */
-  public getId(): T | null {
+  public getId(): T {
     return this.id;
   }
 
@@ -34,14 +37,6 @@ export abstract class BaseDomainEntity<T extends EntityId<any>> {
     return this.id?.toString() || '';
   }
 
-  /** Assigns an ID to the entity */
-  protected assignId(id: T): void {
-    if (this.id !== null) {
-      throw new Error('Entity already has an ID');
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (this as any).id = id;
-  }
   /** Returns entity creation timestamp */
   public getCreatedAt(): Date {
     return this.createdAt;
@@ -61,5 +56,11 @@ export abstract class BaseDomainEntity<T extends EntityId<any>> {
   public equals(entity: BaseDomainEntity<T>): boolean {
     if (!entity) return false;
     return this.getStringId() === entity.getStringId();
+  }
+
+  static isNullOrUndefined<T>(
+    value: T | null | undefined,
+  ): value is null | undefined {
+    return value === null || value === undefined;
   }
 }

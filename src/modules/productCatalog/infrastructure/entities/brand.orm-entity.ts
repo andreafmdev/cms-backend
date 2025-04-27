@@ -1,27 +1,25 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  Relation,
-} from 'typeorm';
-import { ProductOrmEntity } from './product.orm-entity';
+import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
+
 import { Audit } from '@base/infrastructure/entities/util/audit.composition';
 
 @Entity('brands')
 export class BrandOrmEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryColumn({
+    comment: 'Brand ID',
+    type: 'uuid',
+    nullable: false,
+  })
+  id!: string;
 
-  @Column({ comment: 'Brand name', type: 'varchar', length: 100 })
+  @Column({
+    comment: 'Brand name',
+    type: 'varchar',
+    length: 100,
+    nullable: false,
+  })
   name: string;
 
   //#region Relations
-  @OneToMany(() => ProductOrmEntity, (product) => product.brand)
-  @JoinColumn({ name: 'brand_id' }) // 👈 questo collega esplicitamente la colonna FK
-  products: Relation<ProductOrmEntity>[];
 
   @Column(() => Audit, { prefix: false })
   audit: Audit;

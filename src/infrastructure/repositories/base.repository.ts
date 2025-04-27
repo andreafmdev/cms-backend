@@ -1,84 +1,92 @@
-import {
-  FindManyOptions,
-  Repository,
-  ObjectLiteral,
-  FindOptionsWhere,
-  DeepPartial,
-  FindOneOptions,
-} from 'typeorm';
+import { Repository, ObjectLiteral, FindOptionsWhere } from 'typeorm';
 import { IBaseRepository } from '@base/infrastructure/interfaces/base-repository.interface';
 import { Uuid } from '@shared/value-object/uuid.vo';
 import { IntId } from '@shared/value-object/numeric-id.vo';
+import { BaseDomainEntity } from '@shared/kernel/BaseDomainEntity';
+
+/**
+ * Interface for mapping between domain and ORM entities
+ */
+interface IMapper<DomainEntity, OrmEntity> {
+  toDomain(orm: OrmEntity): DomainEntity;
+  toPersistence(domain: DomainEntity): OrmEntity;
+}
+/**
+ * Base repository class for all repositories
+ */
 export abstract class BaseRepository<
+  DomainEntity extends BaseDomainEntity<any>,
   OrmEntity extends ObjectLiteral,
   IdType = IntId | Uuid,
-> implements IBaseRepository<OrmEntity, IdType>
+> implements IBaseRepository<DomainEntity, IdType>
 {
-  constructor(protected readonly repository: Repository<OrmEntity>) {}
-  create(data: DeepPartial<OrmEntity>): OrmEntity {
-    return this.repository.create(data);
+  constructor(
+    protected readonly repository: Repository<OrmEntity>,
+    protected readonly mapper: IMapper<DomainEntity, OrmEntity>,
+  ) {}
+  /**
+   * Create a new entity
+   * @param data - The data to create the entity
+   * @returns The created entity
+   */
+  create(data: DomainEntity): DomainEntity {
+    const mappedData = this.mapper.toPersistence(data);
+    const orm = this.repository.create(mappedData);
+    return this.mapper.toDomain(orm);
   }
 
-  async save(entity: OrmEntity): Promise<OrmEntity> {
-    const savedEntity = await this.repository.save(entity);
-    return savedEntity;
+  /**
+   * Save an entity
+   * @param entity - The entity to save
+   * @returns The saved entity
+   */
+  async save(entity: DomainEntity): Promise<DomainEntity> {
+    const orm = this.mapper.toPersistence(entity);
+    const savedEntity = await this.repository.save(orm);
+    return this.mapper.toDomain(savedEntity);
   }
-
-  async findById(id: IdType): Promise<OrmEntity | null> {
+  /**
+   * Find an entity by its ID
+   * @param id - The ID of the entity to find
+   * @returns The entity if found, otherwise null
+   */
+  async findById(id: IdType): Promise<DomainEntity | null> {
     const idValue = this.hasToStringMethod(id) ? id.toString() : id;
 
-    const whereFilter: FindOptionsWhere<OrmEntity> = {
-      id: idValue,
-    } as FindOptionsWhere<OrmEntity>;
-
-    const result = await this.repository.findOne({ where: whereFilter });
-
-    return result;
-  }
-
-  async findAll(options?: FindManyOptions<OrmEntity>): Promise<OrmEntity[]> {
-    const ormOptions = options as unknown as FindManyOptions<OrmEntity>;
-    const results = await this.repository.find(ormOptions);
-    return results;
-  }
-  async findAllByCondition(filterCondition): Promise<OrmEntity[]> {
-    const ormOptions = filterCondition as unknown as FindOneOptions<OrmEntity>;
-    const results = await this.repository.find(ormOptions);
-
-    return results;
-  }
-  async findOneByCondition(filterCondition): Promise<OrmEntity | null> {
-    const ormOptions = filterCondition as unknown as FindOneOptions<OrmEntity>;
-    const result = await this.repository.findOne(ormOptions);
-
-    return result;
-  }
-  async remove(entity: OrmEntity): Promise<OrmEntity> {
-    const deletedEntity = await this.repository.remove(entity);
-    return deletedEntity;
-  }
-  async findOneByFilters<FilterType>(
-    filters: FilterType,
-  ): Promise<OrmEntity | null> {
-    return this.repository.findOne({
-      where: filters as FindOptionsWhere<OrmEntity>,
+    const orm = await this.repository.findOne({
+      where: { id: idValue } as FindOptionsWhere<OrmEntity>,
     });
+    return orm ? this.mapper.toDomain(orm) : null;
   }
-  async findAllByFilters<FilterType extends { page?: number; limit?: number }>(
-    filters: FilterType,
-  ): Promise<OrmEntity[]> {
-    const { page, limit, ...whereFilters } = filters;
-
-    const options: FindManyOptions<OrmEntity> = {
-      where: whereFilters as FindOptionsWhere<OrmEntity>,
-    };
-    // Apply pagination only if both page and limit are provided
-    if (page !== undefined && page > 0 && limit !== undefined && limit > 0) {
-      options.skip = (page - 1) * limit;
-      options.take = limit;
-    }
-
-    return this.repository.find(options);
+  async findAll(): Promise<DomainEntity[]> {
+    const ormEntities = await this.repository.find();
+    return ormEntities.map((orm) => this.mapper.toDomain(orm));
+  }
+  /**
+   * Find an entity by a condition
+   * @param condition - The condition to find the entity
+   * @returns The entity if found, otherwise null
+   */
+  async findOneByCondition(
+    condition?: FindOptionsWhere<OrmEntity>,
+  ): Promise<DomainEntity | null> {
+    const orm = await this.repository.findOne({
+      where: condition as FindOptionsWhere<OrmEntity>,
+    });
+    return orm ? this.mapper.toDomain(orm) : null;
+  }
+  /**
+   * Find all entities by a condition
+   * @param condition - The condition to find the entities or filters
+   * @returns The entities if found, otherwise null
+   */
+  async findAllByCondition(
+    condition?: FindOptionsWhere<OrmEntity>,
+  ): Promise<DomainEntity[]> {
+    const ormEntities = await this.repository.find({
+      where: condition as FindOptionsWhere<OrmEntity>,
+    });
+    return ormEntities.map((orm) => this.mapper.toDomain(orm));
   }
   private hasToStringMethod(id: unknown): id is { toString(): string } {
     return (
@@ -87,6 +95,14 @@ export abstract class BaseRepository<
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       typeof (id as any).toString === 'function'
     );
+  }
+  /**
+   * Remove an entity
+   * @param entity - The entity to remove
+   */
+  async remove(entity: DomainEntity): Promise<void> {
+    const orm = this.mapper.toPersistence(entity);
+    await this.repository.remove(orm);
   }
   async count<
     FilterType extends { page?: number | string; limit?: number | string },

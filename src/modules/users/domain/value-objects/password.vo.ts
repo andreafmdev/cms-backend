@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { ValueObject } from '@shared/kernel/value-object.abstract';
+import { ValueObject } from '@shared/kernel/ValueObject';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

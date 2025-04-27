@@ -1,6 +1,6 @@
+import { BaseDomainEntity } from '@shared/kernel/BaseDomainEntity';
 import { PermissionId } from '../value-objects/permission-id.vo';
-
-export class Permission {
+export class Permission extends BaseDomainEntity<PermissionId> {
   private static readonly DEFAULT_NAME = 'READ';
 
   private static readonly VALID_PERMISSIONS = new Set([
@@ -10,9 +10,10 @@ export class Permission {
   ]);
 
   private constructor(
-    private readonly id: PermissionId,
     private readonly name: string,
+    id: PermissionId,
   ) {
+    super(id);
     if (!Permission.VALID_PERMISSIONS.has(name)) {
       throw new Error(`Invalid permission: ${name}`);
     }
@@ -20,7 +21,7 @@ export class Permission {
 
   /** Factory method per creare un nuovo permesso */
   static create(name: string): Permission {
-    return new Permission(PermissionId.create(), name);
+    return new Permission(name, PermissionId.create());
   }
 
   static isValid(name: string): boolean {
@@ -29,7 +30,7 @@ export class Permission {
 
   /** Crea un permesso di default */
   static createDefault(): Permission {
-    return new Permission(PermissionId.create(), Permission.DEFAULT_NAME);
+    return new Permission(Permission.DEFAULT_NAME, PermissionId.create());
   }
 
   equals(other: Permission): boolean {
@@ -40,10 +41,6 @@ export class Permission {
     return this.name;
   }
 
-  getId(): PermissionId {
-    return this.id;
-  }
-
   /**
    * Reconstitutes a permission from its properties
    * @param id - The ID of the permission
@@ -51,6 +48,6 @@ export class Permission {
    * @returns A new permission with the same properties as the current permission
    */
   static reconstitute(id: PermissionId, name: string): Permission {
-    return new Permission(id, name);
+    return new Permission(name, id);
   }
 }
