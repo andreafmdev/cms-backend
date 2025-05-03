@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { RequireGroup } from '@module/auth/decorator/auth.decorator';
 import {
@@ -7,10 +7,13 @@ import {
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
-import { CategoryFilterDto } from './application/dto/category-filter.dto';
+import { CategoryFilterDto } from './application/dto/filter/category-filter.dto';
 import { PaginatedResponseDto } from '../../shared/dto/paginated.response.dto';
 import { GetCategoriesResponseDto } from './application/queries/get-categories/get-categories.response';
 import { GetCategoriesQuery } from './application/queries/get-categories/get-categories.query';
+import { SearchCategoriesTreeRequest } from './application/queries/search-category-tree/search-categories-tree.request';
+import { SearchCategoriesTreeQuery } from './application/queries/search-category-tree/search-categories-tree.query';
+import { SearchCategoriesTreeResponse } from './application/queries/search-category-tree/search-categories-tree.response';
 
 @Controller('categories')
 export class CategoryController {
@@ -37,5 +40,21 @@ export class CategoryController {
     @Query() request: CategoryFilterDto,
   ): Promise<PaginatedResponseDto<GetCategoriesResponseDto>> {
     return await this.queryBus.execute(new GetCategoriesQuery(request));
+  }
+
+  @Post('category-tree')
+  @RequireGroup('ADMIN')
+  @ApiOperation({ summary: 'Get category tree' })
+  @ApiResponse({
+    status: 200,
+    description: 'Category tree found successfully',
+  })
+  @ApiBearerAuth()
+  getCategoryTree(
+    @Body() request: SearchCategoriesTreeRequest,
+  ): Promise<SearchCategoriesTreeResponse[]> {
+    return this.queryBus.execute(
+      new SearchCategoriesTreeQuery(request.name, request.languageCode),
+    );
   }
 }

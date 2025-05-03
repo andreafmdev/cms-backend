@@ -2,6 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CategoryRepository } from '@module/productCatalog/infrastructure/repositories/category-repository';
 import { Category } from '@module/productCatalog/domain/aggregates/category';
 import { CategoryId } from '@module/productCatalog/domain/value-objects/category-id';
+import { FindOptionsWhere } from 'typeorm';
+import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entities/category.orm-entity';
+interface CategoryTreeFilter extends FindOptionsWhere<CategoryOrmEntity> {
+  name?: string;
+  languageCode?: string;
+}
 @Injectable()
 export class CategoryService {
   constructor(private readonly categoryRepository: CategoryRepository) {}
@@ -14,5 +20,25 @@ export class CategoryService {
   }
   async createCategory(category: Category): Promise<Category> {
     return await this.categoryRepository.save(category);
+  }
+
+  async findCategoriesByFilters(
+    filters: CategoryTreeFilter,
+  ): Promise<Category[]> {
+    return await this.categoryRepository.findAllByCondition({
+      filters: filters as FindOptionsWhere<CategoryOrmEntity>,
+    });
+  }
+  async findCategoriesByTranslationNameAndLanguage({
+    name,
+    languageCode,
+  }: {
+    name?: string;
+    languageCode?: string;
+  }): Promise<Category[]> {
+    return await this.categoryRepository.findAllByTranslationNameAndLanguage(
+      name,
+      languageCode,
+    );
   }
 }

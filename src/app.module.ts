@@ -10,6 +10,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionsFilter } from '@shared/filters/global-exception.filter';
 import { AuthModule } from '@module/auth/auth.module';
+import { ProductModule } from '@module/productCatalog/product.module';
 
 const GlobalFilterProvider = {
   provide: APP_FILTER,
@@ -68,6 +69,7 @@ const GlobalFilterProvider = {
     DatabaseModule,
     UserModule,
     HealthModule,
+    ProductModule,
   ], // Importa DatabaseModule
   providers: [CommandBus, GlobalFilterProvider],
 })

@@ -5,13 +5,11 @@ import { Permission } from '@module/users/domain/entities/permission';
 import { PermissionRepository } from '@module/users/infrastructure/repositories/permission.repository';
 import { PermissionMapper } from '@module/users/infrastructure/mapper/permission.mapper';
 import { GroupMapper } from '@module/users/infrastructure/mapper/group.mapper';
-import { Filter, FilterComposite } from '@shared/helpers/query-filter';
 import { GroupId } from '@module/users/domain/value-objects/group-id.vo';
-import { FindOptionsWhere } from 'typeorm';
-import { GroupOrmEntity } from '@module/users/infrastructure/entities/group.orm-entity';
 /**
  * Service responsible for managing group-related operations
  */
+
 @Injectable()
 export class GroupService {
   constructor(
@@ -94,19 +92,6 @@ export class GroupService {
    */
   async findAllGroups(): Promise<Group[]> {
     const groupsOrm = await this.groupRepository.findAll();
-    return groupsOrm;
-  }
-
-  /**
-   * Finds groups based on the provided filter
-   * @param filter The filter to apply to the groups
-   * @returns Array of groups matching the filter
-   */
-  async findGroups(filter: Filter | FilterComposite): Promise<Group[]> {
-    const groupsOrm = await this.groupRepository.findAllByCondition(
-      filter as FindOptionsWhere<GroupOrmEntity>,
-    );
-
     return groupsOrm;
   }
 }

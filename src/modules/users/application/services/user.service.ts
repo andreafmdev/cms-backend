@@ -5,6 +5,8 @@ import { User } from '@module/users/domain/aggretates/user';
 import { UserId } from '@module/users/domain/value-objects/user-id.vo';
 import { Password } from '@module/users/domain/value-objects/password.vo';
 import { UserFilterDto } from '../dto/user-filter.dto';
+import { FindOptionsWhere } from 'typeorm';
+import { UserOrmEntity } from '@module/users/infrastructure/entities/user.orm-entity';
 
 /**
  * Service responsible for managing group-related operations
@@ -19,7 +21,11 @@ export class UserService {
   }
 
   async findUsersByFilters(filters: Partial<UserFilterDto>): Promise<User[]> {
-    const userOrm = await this.userRepository.findAllByCondition(filters);
+    const { page, limit, ...whereFilters } = filters;
+    const userOrm = await this.userRepository.findAllByCondition({
+      filters: whereFilters as FindOptionsWhere<UserOrmEntity>,
+      pagination: { page, limit },
+    });
     return userOrm;
   }
   async createUser(

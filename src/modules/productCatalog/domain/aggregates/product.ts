@@ -88,7 +88,7 @@ export class Product extends AggregateRoot<ProductId> {
    * @param props.brandId - The brand ID of the product
    * @param props.categoryId - The category ID of the product
    * @param props.translations - The translations of the product
-   * @param props.attributes - The attributes of the product
+   * @param props.attributesValues - The attributes values of the product
    * @param props.id - The ID of the product
    * @returns A new product
    */
@@ -224,6 +224,9 @@ export class Product extends AggregateRoot<ProductId> {
   //#endregion VALIDATION
 
   //#region GETTERS
+  IsActive(): boolean {
+    return this.isAvailable;
+  }
 
   getTranslations(): ProductTranslation[] {
     return this.translations;

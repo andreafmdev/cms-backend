@@ -31,6 +31,11 @@ import { DatabaseModule } from '@base/infrastructure/database/database.module';
 import { BrandController } from '@module/productCatalog/brand.controller';
 import { CategoryController } from '@module/productCatalog/category.controller';
 import { ProductController } from '@module/productCatalog/product.controller';
+import { GetProductsHandler } from './application/queries/get-products/get-products.handler';
+import { CreateProductHandler } from './application/commands/create-product/create-product.handler';
+import { GetProductCatalogHandler } from './application/queries/get-product-catalog/get-product-catalog.handler';
+import { SearchCategoriesTreeHandler } from './application/queries/search-category-tree/search-categories-tree.handler';
+import { SearchProductsHandler } from './application/queries/search-products/search-products.handler';
 const mappers = [
   ProductMapper,
   ProductTranslationMapper,
@@ -57,6 +62,13 @@ const repositories = [ProductRepository, BrandRepository, CategoryRepository];
 const services = [ProductService, CategoryService, BrandService];
 const seeders = [ProductCatalogSeeder];
 const controllers = [ProductController, CategoryController, BrandController];
+const queryHandlers = [
+  GetProductsHandler,
+  SearchProductsHandler,
+  CreateProductHandler,
+  GetProductCatalogHandler,
+  SearchCategoriesTreeHandler,
+];
 @Module({
   imports: [
     CqrsModule,
@@ -69,6 +81,7 @@ const controllers = [ProductController, CategoryController, BrandController];
     ...services,
     ...mappers,
     ...seeders,
+    ...queryHandlers,
   ],
   controllers: [...controllers],
   exports: [ProductCatalogSeeder],

@@ -1,16 +1,18 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { RequireGroup } from '@module/auth/decorator/auth.decorator';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
-  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
-import { BrandFilterDto } from './application/dto/brand-filter.dto';
+import { BrandFilterDto } from './application/dto/filter/brand-filter.dto';
 import { PaginatedResponseDto } from '../../shared/dto/paginated.response.dto';
 import { GetBrandsResponseDto } from './application/queries/get-brands/get-brands.response';
 import { GetBrandsQuery } from './application/queries/get-brands/get-brands.query';
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('Brands')
 @Controller('brands')
 export class BrandController {
   constructor(private readonly queryBus: QueryBus) {}
@@ -28,10 +30,10 @@ export class BrandController {
     description: 'Brands found successfully',
     type: PaginatedResponseDto<GetBrandsResponseDto>,
   })
-  @ApiQuery({ type: BrandFilterDto })
+  @ApiBody({ type: BrandFilterDto })
   @ApiBearerAuth()
   async GetAllBrands(
-    @Query() request: BrandFilterDto,
+    @Body() request: BrandFilterDto,
   ): Promise<PaginatedResponseDto<GetBrandsResponseDto>> {
     return await this.queryBus.execute(new GetBrandsQuery(request));
   }

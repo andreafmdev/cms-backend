@@ -17,10 +17,10 @@ export class CategoryMapper extends BaseMapper<Category, CategoryOrmEntity> {
   toDomain(orm: CategoryOrmEntity): Category {
     return Category.reconstitute({
       id: CategoryId.create(orm.id),
-      attributes: orm.attributes.map((a) =>
+      attributes: (orm.attributes ?? []).map((a) =>
         this.productCategoryAttributeMapper.toDomain(a),
       ),
-      translations: orm.translations.map((t) =>
+      translations: (orm.translations ?? []).map((t) =>
         this.categoryTranslationMapper.toDomain(t),
       ),
     });

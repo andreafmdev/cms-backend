@@ -4,6 +4,13 @@ import { Uuid } from '@shared/value-object/uuid.vo';
 import { IntId } from '@shared/value-object/numeric-id.vo';
 import { BaseDomainEntity } from '@shared/kernel/BaseDomainEntity';
 
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+export type FilterParams<OrmEntity> = FindOptionsWhere<OrmEntity> & {
+  [key: string]: any;
+};
 /**
  * Interface for mapping between domain and ORM entities
  */
@@ -53,9 +60,9 @@ export abstract class BaseRepository<
   async findById(id: IdType): Promise<DomainEntity | null> {
     const idValue = this.hasToStringMethod(id) ? id.toString() : id;
 
-    const orm = await this.repository.findOne({
-      where: { id: idValue } as FindOptionsWhere<OrmEntity>,
-    });
+    const orm = await this.repository.findOneBy({
+      id: idValue,
+    } as FindOptionsWhere<OrmEntity>);
     return orm ? this.mapper.toDomain(orm) : null;
   }
   async findAll(): Promise<DomainEntity[]> {
@@ -80,21 +87,23 @@ export abstract class BaseRepository<
    * @param condition - The condition to find the entities or filters
    * @returns The entities if found, otherwise null
    */
-  async findAllByCondition(
-    condition?: FindOptionsWhere<OrmEntity>,
-  ): Promise<DomainEntity[]> {
+  async findAllByCondition(options?: {
+    filters?: FindOptionsWhere<OrmEntity>;
+    pagination?: PaginationParams;
+  }): Promise<DomainEntity[]> {
+    const where = options?.filters || {};
+    const page = options?.pagination?.page;
+    const limit = options?.pagination?.limit;
+
+    const skip = page && limit ? (Number(page) - 1) * Number(limit) : undefined;
+    const take = limit ? Number(limit) : undefined;
+
     const ormEntities = await this.repository.find({
-      where: condition as FindOptionsWhere<OrmEntity>,
+      where,
+      skip,
+      take,
     });
     return ormEntities.map((orm) => this.mapper.toDomain(orm));
-  }
-  private hasToStringMethod(id: unknown): id is { toString(): string } {
-    return (
-      id !== null &&
-      typeof id === 'object' &&
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      typeof (id as any).toString === 'function'
-    );
   }
   /**
    * Remove an entity
@@ -117,5 +126,13 @@ export abstract class BaseRepository<
       });
     }
     return this.repository.count();
+  }
+  private hasToStringMethod(id: unknown): id is { toString(): string } {
+    return (
+      id !== null &&
+      typeof id === 'object' &&
+      'toString' in id &&
+      typeof (id as { toString: unknown }).toString === 'function'
+    );
   }
 }

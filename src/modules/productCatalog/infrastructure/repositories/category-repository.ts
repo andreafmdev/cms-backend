@@ -42,4 +42,24 @@ export class CategoryRepository
     const categoryOrms = await super.findAll();
     return categoryOrms;
   }
+  async findAllByTranslationNameAndLanguage(
+    name?: string,
+    languageCode?: string,
+  ): Promise<Category[]> {
+    const query = this.repository
+      .createQueryBuilder('category')
+      .leftJoinAndSelect('category.translations', 'translation');
+
+    if (name) {
+      query.andWhere('translation.name LIKE :name', { name: `%${name}%` });
+    }
+    if (languageCode) {
+      query.andWhere('translation.languageCode = :languageCode', {
+        languageCode,
+      });
+    }
+
+    const ormEntities = await query.getMany();
+    return ormEntities.map((orm) => this.mapper.toDomain(orm));
+  }
 }

@@ -10,6 +10,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 //import { LoggerMiddleware } from '@shared/middleware/logger.middleware';
 import { Logger } from 'nestjs-pino';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   //  Use FastifyAdapter
@@ -40,6 +41,14 @@ async function bootstrap() {
 
   // ✅ Implementa il middleware correttamente per Fastify
   app.useLogger(app.get(Logger));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
   /* app
     .getHttpAdapter()
     .getInstance()
@@ -57,10 +66,6 @@ async function bootstrap() {
     .addBearerAuth()
     .setTitle('Tamagni Piano Store')
     .setDescription('This is the API for the Tamagni Piano Store')
-    .addTag('products')
-    .addTag('users')
-    .addTag('auth')
-    .addTag('health')
     .addBearerAuth()
     .setVersion('1.0')
     .build();

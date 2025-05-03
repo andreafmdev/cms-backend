@@ -1,4 +1,3 @@
-// pagination.helper.ts (esempio rapido)
 import { PaginatedResponseDto } from '@shared/dto/paginated.response.dto';
 export function paginate<T>(
   items: T[],

@@ -1,31 +1,31 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber } from 'class-validator';
 
 import { IsString } from 'class-validator';
-
-export class GetProductsResponseDto {
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
+class ProductTranslationDto {
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @Type(() => BrandDto)
-  brand: BrandDto;
-
-  @Type(() => CategoryDto)
-  category: CategoryDto;
-
-  @IsNumber()
-  @IsNotEmpty()
-  price: number;
-}
-
-class BrandDto {
   @IsString()
   @IsNotEmpty()
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  languageCode: string;
+}
+class CategoryTranslationDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  languageCode: string;
+}
+class BrandDto {
+  @IsString()
   id: string;
 
   @IsString()
@@ -38,7 +38,40 @@ class CategoryDto {
   @IsNotEmpty()
   id: string;
 
+  @IsArray()
+  @Type(() => CategoryTranslationDto)
+  translations: CategoryTranslationDto[];
+}
+export class GetProductsResponseDto {
+  constructor(
+    id: string,
+    translations: ProductTranslationDto[],
+    brand: BrandDto,
+    category: CategoryDto,
+    price: number,
+  ) {
+    this.id = id;
+    this.translations = translations;
+    this.brand = brand;
+    this.category = category;
+    this.price = price;
+  }
+
   @IsString()
   @IsNotEmpty()
-  name: string;
+  id: string;
+
+  @Type(() => BrandDto)
+  brand: BrandDto;
+
+  @Type(() => CategoryDto)
+  category: CategoryDto;
+
+  @IsNumber()
+  @IsNotEmpty()
+  price: number;
+
+  @IsArray()
+  @Type(() => ProductTranslationDto)
+  translations: ProductTranslationDto[];
 }

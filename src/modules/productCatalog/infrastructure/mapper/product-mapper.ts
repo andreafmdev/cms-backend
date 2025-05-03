@@ -38,7 +38,7 @@ export class ProductMapper extends BaseMapper<Product, ProductOrmEntity> {
       image: images,
       brandId: BrandId.create(orm.brandId),
       categoryId: CategoryId.create(orm.categoryId),
-      attributesValues: orm.attributesValues.map((a) =>
+      attributesValues: (orm.attributesValues ?? []).map((a) =>
         this.productCategoryAttributeValueMapper.toDomain(a),
       ),
     });
