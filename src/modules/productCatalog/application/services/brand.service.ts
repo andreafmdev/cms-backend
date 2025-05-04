@@ -16,4 +16,27 @@ export class BrandService {
   async createBrand(brand: Brand): Promise<Brand> {
     return await this.brandRepository.createBrand(brand);
   }
+  async searchBrands(filters: {
+    name?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<Brand[]> {
+    const params = {
+      filters: {
+        name: filters.name,
+      },
+      pagination: {
+        page: filters.page,
+        limit: filters.limit,
+      },
+    };
+    return await this.brandRepository.findAllByCondition(params);
+  }
+  async countSearchBrands(filters: {
+    name?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<number> {
+    return await this.brandRepository.count(filters);
+  }
 }

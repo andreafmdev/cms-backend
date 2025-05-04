@@ -62,4 +62,41 @@ export class CategoryRepository
     const ormEntities = await query.getMany();
     return ormEntities.map((orm) => this.mapper.toDomain(orm));
   }
+  async searchCategories(filters: {
+    name?: string;
+    languageCode?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<Category[]> {
+    const query = this.buildSearchQuery(filters);
+    const limit = filters.limit ?? process.env.DEFAULT_LIMIT;
+    const page = filters.page ?? process.env.DEFAULT_PAGE;
+    query.skip(Number(page) * Number(limit)).take(Number(limit));
+    const ormEntities = await query.getMany();
+    return ormEntities.map((orm) => this.mapper.toDomain(orm));
+  }
+  async searchCategoriesCount(filters: {
+    name?: string;
+    languageCode?: string;
+  }): Promise<number> {
+    const query = this.buildSearchQuery(filters);
+    return await query.getCount();
+  }
+  private buildSearchQuery(filters: { name?: string; languageCode?: string }) {
+    const query = this.repository.createQueryBuilder('categories');
+    query.leftJoinAndSelect('categories.translations', 'translation');
+    query.leftJoinAndSelect('categories.attributes', 'attribute');
+    query.leftJoinAndSelect('attribute.translations', 'attributeTranslation');
+    if (filters.name) {
+      query.andWhere('translation.name LIKE :name', {
+        name: `%${filters.name}%`,
+      });
+    }
+    if (filters.languageCode) {
+      query.andWhere('attributeTranslation.languageCode = :languageCode', {
+        languageCode: filters.languageCode,
+      });
+    }
+    return query;
+  }
 }

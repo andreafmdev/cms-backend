@@ -41,4 +41,18 @@ export class CategoryService {
       languageCode,
     );
   }
+  async searchCategories(filters: {
+    name?: string;
+    languageCode?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<Category[]> {
+    return await this.categoryRepository.searchCategories(filters);
+  }
+  async searchCategoriesCount(filters: {
+    name?: string;
+    languageCode?: string;
+  }): Promise<number> {
+    return await this.categoryRepository.searchCategoriesCount(filters);
+  }
 }

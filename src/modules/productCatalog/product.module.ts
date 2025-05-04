@@ -36,6 +36,10 @@ import { CreateProductHandler } from './application/commands/create-product/crea
 import { GetProductCatalogHandler } from './application/queries/get-product-catalog/get-product-catalog.handler';
 import { SearchCategoriesTreeHandler } from './application/queries/search-category-tree/search-categories-tree.handler';
 import { SearchProductsHandler } from './application/queries/search-products/search-products.handler';
+import { SearchCategoriesHandler } from './application/queries/search-categories/search-categories.handler';
+import { SearchBrandsHandler } from './application/queries/search-brands/search-brands.handler';
+import { GetBrandDetailHandler } from './application/queries/get-brand-detail/get-brand-detail.handler';
+import { GetCategoryDetailHandler } from './application/queries/get-category-detail/get-category-detail.handler';
 const mappers = [
   ProductMapper,
   ProductTranslationMapper,
@@ -68,6 +72,10 @@ const queryHandlers = [
   CreateProductHandler,
   GetProductCatalogHandler,
   SearchCategoriesTreeHandler,
+  SearchCategoriesHandler,
+  SearchBrandsHandler,
+  GetBrandDetailHandler,
+  GetCategoryDetailHandler,
 ];
 @Module({
   imports: [

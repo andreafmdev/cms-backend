@@ -2,7 +2,7 @@ import { RequireGroup } from '@module/auth/decorator/auth.decorator';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { QueryBus, CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { Body, Get, Post, Query } from '@nestjs/common';
+import { Body, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { PaginatedResponseDto } from '@shared/dto/paginated.response.dto';
 import { ProductFilterDto } from './application/dto/filter/product-filter.dto';
 import { GetProductsResponseDto } from './application/queries/get-products/get-products.response';
@@ -31,6 +31,7 @@ export class ProductController {
    * @returns The created product
    */
   @Post('search')
+  @HttpCode(200)
   @RequireGroup('ADMIN')
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({
