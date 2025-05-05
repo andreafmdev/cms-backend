@@ -134,4 +134,19 @@ export class ProductService {
   }): Promise<number> {
     return this.productRepository.searchProductsCount(filters);
   }
+  async findProductCategoryAttributesWithValues(
+    productId: ProductId,
+    languageCode: string,
+  ): Promise<
+    {
+      attributeId: string;
+      attributeName: string;
+      attributeValue: string;
+    }[]
+  > {
+    return this.categoryRepository.findProductCategoryAttributesWithValues(
+      productId.getValue().toString(),
+      languageCode,
+    );
+  }
 }

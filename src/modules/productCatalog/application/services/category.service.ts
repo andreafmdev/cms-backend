@@ -4,6 +4,7 @@ import { Category } from '@module/productCatalog/domain/aggregates/category';
 import { CategoryId } from '@module/productCatalog/domain/value-objects/category-id';
 import { FindOptionsWhere } from 'typeorm';
 import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entities/category.orm-entity';
+import { ProductId } from '@module/productCatalog/domain/value-objects/product-id';
 interface CategoryTreeFilter extends FindOptionsWhere<CategoryOrmEntity> {
   name?: string;
   languageCode?: string;
@@ -21,7 +22,21 @@ export class CategoryService {
   async createCategory(category: Category): Promise<Category> {
     return await this.categoryRepository.save(category);
   }
-
+  async findCategoryByIdWithAttributes(
+    productId: ProductId,
+    languageCode: string,
+  ): Promise<
+    {
+      attributeId: string;
+      attributeName: string;
+      attributeValue: string;
+    }[]
+  > {
+    return await this.categoryRepository.findProductCategoryAttributesWithValues(
+      productId.getValue().toString(),
+      languageCode,
+    );
+  }
   async findCategoriesByFilters(
     filters: CategoryTreeFilter,
   ): Promise<Category[]> {

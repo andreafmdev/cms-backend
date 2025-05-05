@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Audit } from '@base/infrastructure/entities/util/audit.composition';
 import { ProductOrmEntity } from './product.orm-entity';
+import { ProductCategoryAttributeOrmEntity } from './product-category-attribute.orm-entity';
 /**
  * @property productId - The ID of the product
  * @property attributeId - The ID of the attribute
@@ -44,6 +45,16 @@ export class ProductCategoryAttributeValueOrmEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'product_id' })
   product: Relation<ProductOrmEntity>;
+
+  @ManyToOne(
+    () => ProductCategoryAttributeOrmEntity,
+    (attribute) => attribute.values,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn({ name: 'attribute_id' })
+  attribute: Relation<ProductCategoryAttributeOrmEntity>;
 
   //#region Relations
 

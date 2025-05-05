@@ -2,7 +2,7 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 
 import { IsString } from 'class-validator';
 
-export class GetCategoryDetailRequestDto {
+export class GetProductDetailRequestDto {
   @IsString()
   @IsNotEmpty()
   id: string;

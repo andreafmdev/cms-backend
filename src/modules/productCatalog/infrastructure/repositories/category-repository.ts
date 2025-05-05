@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from '@base/infrastructure/repositories/base.repository';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entities/category.orm-entity';
 import { ICategoryRepository } from '@module/productCatalog/domain/repositories/category-repository.interface';
 import { CategoryId } from '@module/productCatalog/domain/value-objects/category-id';
 import { Category } from '@module/productCatalog/domain/aggregates/category';
 import { CategoryMapper } from '../mapper/category-mapper';
-
+import { ProductCategoryAttributeValueOrmEntity } from '../entities/product-category-attribute-value.orm-entity';
+//custom type
+interface AttributeWithValue {
+  attributeId: string;
+  attributeName: string;
+  attributeValue: string;
+}
 @Injectable()
 export class CategoryRepository
   extends BaseRepository<Category, CategoryOrmEntity, CategoryId>
@@ -15,8 +21,10 @@ export class CategoryRepository
 {
   constructor(
     @InjectRepository(CategoryOrmEntity)
+    @InjectDataSource()
     repo: Repository<CategoryOrmEntity>,
     mapper: CategoryMapper,
+    private readonly dataSource: DataSource,
   ) {
     super(repo, mapper);
   }
@@ -81,6 +89,30 @@ export class CategoryRepository
   }): Promise<number> {
     const query = this.buildSearchQuery(filters);
     return await query.getCount();
+  }
+  async findProductCategoryAttributesWithValues(
+    productId: string,
+    languageCode: string,
+  ): Promise<AttributeWithValue[]> {
+    const results = await this.dataSource
+      .getRepository(ProductCategoryAttributeValueOrmEntity)
+      .createQueryBuilder('value')
+      .innerJoin('value.attribute', 'attribute')
+      .innerJoin(
+        'attribute.translations',
+        'translation',
+        'translation.languageCode = :lang',
+        { lang: languageCode },
+      )
+      .where('value.productId = :productId', { productId })
+      .select([
+        'attribute.id AS attributeId',
+        'translation.value AS attributeName',
+        'value.value AS attributeValue',
+      ])
+      .getRawMany<AttributeWithValue>();
+
+    return results;
   }
   private buildSearchQuery(filters: { name?: string; languageCode?: string }) {
     const query = this.repository.createQueryBuilder('categories');

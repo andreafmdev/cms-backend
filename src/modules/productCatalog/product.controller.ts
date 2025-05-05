@@ -18,6 +18,9 @@ import { ProductCatalogFilterDto } from './application/dto/filter/product-catalo
 import { SearchProductsResponseDto } from './application/queries/search-products/search-products.response';
 import { SearchProductsQuery } from './application/queries/search-products/search-products.query';
 import { SearchProductsRequestDto } from './application/queries/search-products/search-products.request';
+import { GetProductDetailQuery } from './application/queries/get-product-detail/get-product-detail.query';
+import { GetProductDetailResponseDto } from './application/queries/get-product-detail/get-product-detail.response';
+import { GetProductDetailRequestDto } from './application/queries/get-product-detail/get-product-detail.request';
 @ApiTags('Products')
 @Controller('products')
 export class ProductController {
@@ -100,6 +103,17 @@ export class ProductController {
   ): Promise<PaginatedResponseDto<GetProductCatalogResponseDto>> {
     const query = new GetProductCatalogQuery(request);
 
+    return await this.queryBus.execute(query);
+  }
+  //get product detail
+  @Get('detail')
+  @RequireGroup('ADMIN')
+  @ApiOperation({ summary: 'Get product detail' })
+  @ApiBearerAuth()
+  async getProductDetail(
+    @Query() request: GetProductDetailRequestDto,
+  ): Promise<GetProductDetailResponseDto> {
+    const query = new GetProductDetailQuery(request.id, request.languageCode);
     return await this.queryBus.execute(query);
   }
 }

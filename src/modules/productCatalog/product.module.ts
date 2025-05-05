@@ -40,6 +40,7 @@ import { SearchCategoriesHandler } from './application/queries/search-categories
 import { SearchBrandsHandler } from './application/queries/search-brands/search-brands.handler';
 import { GetBrandDetailHandler } from './application/queries/get-brand-detail/get-brand-detail.handler';
 import { GetCategoryDetailHandler } from './application/queries/get-category-detail/get-category-detail.handler';
+import { GetProductDetailHandler } from './application/queries/get-product-detail/get-product-detail.handler';
 const mappers = [
   ProductMapper,
   ProductTranslationMapper,
@@ -76,6 +77,7 @@ const queryHandlers = [
   SearchBrandsHandler,
   GetBrandDetailHandler,
   GetCategoryDetailHandler,
+  GetProductDetailHandler,
 ];
 @Module({
   imports: [
@@ -84,7 +86,6 @@ const queryHandlers = [
     TypeOrmModule.forFeature([...entities]),
   ],
   providers: [
-    ...entities,
     ...repositories,
     ...services,
     ...mappers,

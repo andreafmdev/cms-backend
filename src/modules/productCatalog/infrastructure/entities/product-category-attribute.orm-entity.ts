@@ -12,6 +12,7 @@ import {
 import { ProductCategoryAttributeTranslationOrmEntity } from './product-category-attribute-translation.orm-entity';
 import { Audit } from '@base/infrastructure/entities/util/audit.composition';
 import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entities/category.orm-entity';
+import { ProductCategoryAttributeValueOrmEntity } from './product-category-attribute-value.orm-entity';
 /**
  * Represents a product category attribute in the database.
  * This entity defines attributes that can be assigned to products within a category.
@@ -54,4 +55,10 @@ export class ProductCategoryAttributeOrmEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'category_id' })
   category: Relation<CategoryOrmEntity>;
+
+  @OneToMany(
+    () => ProductCategoryAttributeValueOrmEntity,
+    (value) => value.attribute,
+  )
+  values: Relation<ProductCategoryAttributeValueOrmEntity>[];
 }
