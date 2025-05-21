@@ -145,7 +145,7 @@ describe('ProductMapper', () => {
       }
 
       expect(domainEntity.getPrice()).toBe(TEST_CONSTANTS.PRODUCT.PRICE);
-      expect(domainEntity.getIsAvailable()).toBe(true);
+      expect(domainEntity.IsAvailable()).toBe(true);
 
       // Verifica translations / Verify translations
       const translations = domainEntity.getTranslations();
@@ -277,7 +277,7 @@ describe('ProductMapper', () => {
 
       // Assert
       expect(updatedProduct.getPrice()).toBe(200);
-      expect(updatedProduct.getIsAvailable()).toBe(false);
+      expect(updatedProduct.IsAvailable()).toBe(false);
       expect(updatedProduct.getId()).toBe(existingId); // Verifica che l'ID sia mantenuto / Verify ID is maintained
       expect(updatedProduct).not.toBe(product); // Verifica immutabilità / Verify immutability
     });

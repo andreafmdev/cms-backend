@@ -1,3 +1,4 @@
+import { MemoryStorageFile } from '@x6tech/nest-file-fastify';
 import { ProductTranslationDto } from '../../dto/product-translation.dto';
 
 export class CreateProductCommand {
@@ -5,8 +6,9 @@ export class CreateProductCommand {
     public readonly price: number,
     public readonly brandId: string,
     public readonly categoryId: string,
-    public readonly isActive: boolean,
+    public readonly isAvailable: boolean,
+    public readonly isFeatured: boolean,
     public readonly translations: ProductTranslationDto[],
-    public readonly image: string[],
+    public readonly image: MemoryStorageFile[],
   ) {}
 }

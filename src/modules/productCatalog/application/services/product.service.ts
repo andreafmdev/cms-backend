@@ -69,7 +69,8 @@ export class ProductService {
     translations: ProductTranslationDto[];
     brandId: string;
     categoryId: string;
-    isActive: boolean;
+    isAvailable: boolean;
+    isFeatured: boolean;
   }): Promise<Product> {
     const productId = ProductId.create();
 
@@ -109,7 +110,8 @@ export class ProductService {
       translations: productTranslations,
       image: productImage.length > 0 ? productImage : [],
       attributesValues: [],
-      isAvailable: props.isActive,
+      isAvailable: props.isAvailable,
+      isFeatured: props.isFeatured,
     });
     return await this.productRepository.save(product);
   }
@@ -118,7 +120,8 @@ export class ProductService {
     categoryId?: string;
     brandId?: string;
     price?: number;
-    isActive?: boolean;
+    isAvailable?: boolean;
+    isFeatured?: boolean;
     languageCode?: string;
     page?: number;
     limit?: number;
@@ -130,7 +133,8 @@ export class ProductService {
     categoryId?: string;
     brandId?: string;
     price?: number;
-    isActive?: boolean;
+    isAvailable?: boolean;
+    isFeatured?: boolean;
   }): Promise<number> {
     return this.productRepository.searchProductsCount(filters);
   }
@@ -148,5 +152,10 @@ export class ProductService {
       productId.getValue().toString(),
       languageCode,
     );
+  }
+  async findProductsByCategoryId(categoryId: CategoryId): Promise<Product[]> {
+    return this.productRepository.findAllByCondition({
+      filters: { categoryId: categoryId.getValue().toString() },
+    });
   }
 }

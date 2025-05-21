@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 
 import { IsString } from 'class-validator';
 
@@ -36,6 +36,8 @@ export class GetProductCatalogResponseDto {
     description: string,
     brand: BrandDto,
     category: CategoryDto,
+    isAvailable: boolean,
+    isFeatured: boolean,
     price: number,
   ) {
     this.id = id;
@@ -44,6 +46,8 @@ export class GetProductCatalogResponseDto {
     this.brand = brand;
     this.category = category;
     this.price = price;
+    this.isAvailable = isAvailable;
+    this.isFeatured = isFeatured;
   }
 
   @IsString()
@@ -51,6 +55,10 @@ export class GetProductCatalogResponseDto {
 
   @IsString()
   name: string;
+  @IsBoolean()
+  isAvailable: boolean;
+  @IsBoolean()
+  isFeatured: boolean;
 
   @IsString()
   description: string;
@@ -63,4 +71,11 @@ export class GetProductCatalogResponseDto {
 
   @IsNumber()
   price: number;
+
+  @Type(() => ImageDto)
+  images: ImageDto[];
+}
+class ImageDto {
+  @IsString()
+  url: string;
 }

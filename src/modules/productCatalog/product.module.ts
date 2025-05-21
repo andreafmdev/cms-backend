@@ -34,13 +34,26 @@ import { ProductController } from '@module/productCatalog/product.controller';
 import { GetProductsHandler } from './application/queries/get-products/get-products.handler';
 import { CreateProductHandler } from './application/commands/create-product/create-product.handler';
 import { GetProductCatalogHandler } from './application/queries/get-product-catalog/get-product-catalog.handler';
-import { SearchCategoriesTreeHandler } from './application/queries/search-category-tree/search-categories-tree.handler';
 import { SearchProductsHandler } from './application/queries/search-products/search-products.handler';
 import { SearchCategoriesHandler } from './application/queries/search-categories/search-categories.handler';
 import { SearchBrandsHandler } from './application/queries/search-brands/search-brands.handler';
 import { GetBrandDetailHandler } from './application/queries/get-brand-detail/get-brand-detail.handler';
 import { GetCategoryDetailHandler } from './application/queries/get-category-detail/get-category-detail.handler';
 import { GetProductDetailHandler } from './application/queries/get-product-detail/get-product-detail.handler';
+import { GetBrandsQueryHandler } from './application/queries/get-brands/get-brands.query.handler';
+import { LanguageMapper } from './infrastructure/mapper/language-mapper';
+import { LanguageOrmEntity } from './infrastructure/entities/language.orm-entity';
+import { LanguageController } from './language.controller';
+import { GetLanguagesHandler } from './application/queries/get-languages/get-languages.handler';
+import { LanguageService } from './application/services/language.service';
+import { LanguageRepository } from './infrastructure/repositories/language-repository';
+import { UploadModule } from '@module/upload/upload.module';
+import { GetBrandOptionsQueryHandler } from './application/queries/get-brand-options/get-brand-options.handler';
+import { SearchCategoryOptionsHandler } from './application/queries/search-category-tree/search-category-options.handler';
+import { CreateBrandCommandHandler } from './application/commands/create-brand/create-brand.handler';
+import { UpdateBrandCommandHandler } from './application/commands/update-brand/update-brand.handler';
+import { CreateCategoryHandler } from './application/commands/create-category/create-category.handler';
+import { DeleteCategoryHandler } from './application/commands/delete-category/delete-category.handler';
 const mappers = [
   ProductMapper,
   ProductTranslationMapper,
@@ -51,6 +64,7 @@ const mappers = [
   ProductCategoryAttributeValueMapper,
   ProductCategoryAttributeTranslationMapper,
   ProductImageMapper,
+  LanguageMapper,
 ];
 const entities = [
   CategoryOrmEntity,
@@ -62,28 +76,52 @@ const entities = [
   ProductCategoryAttributeOrmEntity,
   ProductCategoryAttributeTranslationOrmEntity,
   CategoryTranslationOrmEntity,
+  LanguageOrmEntity,
 ];
-const repositories = [ProductRepository, BrandRepository, CategoryRepository];
-const services = [ProductService, CategoryService, BrandService];
+const repositories = [
+  ProductRepository,
+  BrandRepository,
+  CategoryRepository,
+  LanguageRepository,
+];
+const services = [
+  ProductService,
+  CategoryService,
+  BrandService,
+  LanguageService,
+];
 const seeders = [ProductCatalogSeeder];
-const controllers = [ProductController, CategoryController, BrandController];
+const controllers = [
+  ProductController,
+  CategoryController,
+  BrandController,
+  LanguageController,
+];
 const queryHandlers = [
   GetProductsHandler,
   SearchProductsHandler,
   CreateProductHandler,
   GetProductCatalogHandler,
-  SearchCategoriesTreeHandler,
+  SearchCategoryOptionsHandler,
   SearchCategoriesHandler,
   SearchBrandsHandler,
   GetBrandDetailHandler,
   GetCategoryDetailHandler,
   GetProductDetailHandler,
+  GetBrandsQueryHandler,
+  GetLanguagesHandler,
+  GetBrandOptionsQueryHandler,
+  CreateBrandCommandHandler,
+  UpdateBrandCommandHandler,
+  CreateCategoryHandler,
+  DeleteCategoryHandler,
 ];
 @Module({
   imports: [
     CqrsModule,
     DatabaseModule,
     TypeOrmModule.forFeature([...entities]),
+    UploadModule,
   ],
   providers: [
     ...repositories,

@@ -14,14 +14,17 @@ export interface ProductProps {
   translations: ProductTranslation[];
   price: number;
   isAvailable: boolean;
+  isFeatured: boolean;
   image: ProductImage[];
   brandId: BrandId;
   categoryId: CategoryId;
   attributesValues: ProductCategoryAttributeValue[];
 }
 
-export interface CreateProductProps extends Omit<ProductProps, 'isAvailable'> {
+export interface CreateProductProps
+  extends Omit<ProductProps, 'isAvailable' | 'isFeatured'> {
   isAvailable?: boolean;
+  isFeatured?: boolean;
   id: ProductId;
 }
 
@@ -35,12 +38,14 @@ export class Product extends AggregateRoot<ProductId> {
   //#region PROPERTIES
   private readonly price: number;
   private readonly isAvailable: boolean;
+  private readonly isFeatured: boolean;
   private readonly image: ProductImage[];
   private readonly brandId: BrandId;
   private readonly categoryId: CategoryId;
   private readonly translations: ProductTranslation[];
   private readonly attributesValues: ProductCategoryAttributeValue[];
   private static readonly DEFAULT_IS_AVAILABLE = true;
+  private static readonly DEFAULT_IS_FEATURED = false;
   private static readonly DEFAULT_LANGUAGE_CODE = 'it';
   private static readonly MIN_PRICE = 0;
   //#endregion PROPERTIES
@@ -49,6 +54,7 @@ export class Product extends AggregateRoot<ProductId> {
   private constructor(
     price: number,
     isAvailable: boolean,
+    isFeatured: boolean,
     image: ProductImage[],
     translations: ProductTranslation[],
     attributesValues: ProductCategoryAttributeValue[],
@@ -60,6 +66,7 @@ export class Product extends AggregateRoot<ProductId> {
     Product.validateInvariants({
       price,
       isAvailable,
+      isFeatured,
       image,
       brandId,
       categoryId,
@@ -74,6 +81,7 @@ export class Product extends AggregateRoot<ProductId> {
     this.translations = translations;
     this.attributesValues = attributesValues;
     this.categoryId = categoryId;
+    this.isFeatured = isFeatured;
   }
   //#endregion CONSTRUCTOR
 
@@ -96,6 +104,7 @@ export class Product extends AggregateRoot<ProductId> {
     const product = new Product(
       props.price,
       props.isAvailable ?? Product.DEFAULT_IS_AVAILABLE,
+      props.isFeatured ?? Product.DEFAULT_IS_FEATURED,
       props.image,
       props.translations,
       props.attributesValues,
@@ -123,6 +132,7 @@ export class Product extends AggregateRoot<ProductId> {
     return new Product(
       props.price,
       props.isAvailable,
+      props.isFeatured,
       props.image,
       props.translations,
       props.attributesValues,
@@ -224,19 +234,19 @@ export class Product extends AggregateRoot<ProductId> {
   //#endregion VALIDATION
 
   //#region GETTERS
-  IsActive(): boolean {
+  IsAvailable(): boolean {
     return this.isAvailable;
   }
-
+  IsFeatured(): boolean {
+    return this.isFeatured;
+  }
   getTranslations(): ProductTranslation[] {
     return this.translations;
   }
   getPrice(): number {
     return this.price;
   }
-  getIsAvailable(): boolean {
-    return this.isAvailable;
-  }
+
   getProductImages(): ProductImage[] {
     return this.image;
   }
@@ -278,6 +288,7 @@ export class Product extends AggregateRoot<ProductId> {
     return new Product(
       props.price ?? this.price,
       props.isAvailable ?? this.isAvailable,
+      props.isFeatured ?? this.isFeatured,
       props.image ?? this.image,
       props.translations ?? this.translations,
       props.attributesValues ?? this.attributesValues,

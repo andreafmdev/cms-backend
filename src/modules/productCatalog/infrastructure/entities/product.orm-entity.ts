@@ -52,6 +52,9 @@ export class ProductOrmEntity extends BaseEntity {
   @Column({ comment: 'Is available', type: 'boolean', default: true })
   isAvailable: boolean;
 
+  @Column({ comment: 'Is featured', type: 'boolean', default: false })
+  isFeatured: boolean;
+
   @Column({
     name: 'category_id',
     comment: 'Category ID',

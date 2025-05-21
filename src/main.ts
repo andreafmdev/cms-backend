@@ -7,7 +7,6 @@ import {
 import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-
 //import { LoggerMiddleware } from '@shared/middleware/logger.middleware';
 import { Logger } from 'nestjs-pino';
 import { ValidationPipe } from '@nestjs/common';
@@ -34,6 +33,12 @@ async function bootstrap() {
         imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
         scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
       },
+    },
+  });
+  await app.register(import('@fastify/multipart'), {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5 MB
+      files: 3, // For multipart forms, the max number of parts (fields + files)
     },
   });
 

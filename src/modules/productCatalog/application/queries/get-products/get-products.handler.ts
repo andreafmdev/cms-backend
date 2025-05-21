@@ -42,7 +42,8 @@ export class GetProductsHandler implements IQueryHandler<GetProductsQuery> {
         return plainToInstance(GetProductsResponseDto, {
           id: product.getId().toString(),
           price: product.getPrice(),
-          isActive: product.IsActive(),
+          isAvailable: product.IsAvailable(),
+          isFeatured: product.IsFeatured(),
           translations: product.getTranslations().map((translation) => ({
             name: translation.getName(),
             description: translation.getDescription(),

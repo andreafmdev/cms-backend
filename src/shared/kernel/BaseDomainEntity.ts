@@ -4,7 +4,7 @@ import { IntId } from '@shared/value-object/numeric-id.vo';
 /**
  * Interface for entity IDs
  */
-export interface EntityId<T = Uuid | IntId> {
+export interface EntityId<T = Uuid | IntId | string> {
   equals(other: EntityId<T>): boolean;
   toString(): string;
   getValue(): T;

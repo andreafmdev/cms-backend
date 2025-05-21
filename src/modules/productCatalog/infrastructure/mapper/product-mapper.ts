@@ -35,6 +35,7 @@ export class ProductMapper extends BaseMapper<Product, ProductOrmEntity> {
       translations,
       price: orm.price,
       isAvailable: orm.isAvailable,
+      isFeatured: orm.isFeatured,
       image: images,
       brandId: BrandId.create(orm.brandId),
       categoryId: CategoryId.create(orm.categoryId),
@@ -61,7 +62,8 @@ export class ProductMapper extends BaseMapper<Product, ProductOrmEntity> {
       orm.categoryId = categoryId.toString();
     }
     orm.price = domainEntity.getPrice();
-    orm.isAvailable = domainEntity.getIsAvailable();
+    orm.isAvailable = domainEntity.IsAvailable();
+    orm.isFeatured = domainEntity.IsFeatured();
     orm.images = domainEntity
       .getProductImages()
       .map((i) => this.productImageMapper.toPersistence(i));

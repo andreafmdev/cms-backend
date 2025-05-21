@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 import { IsString } from 'class-validator';
 
@@ -8,10 +8,10 @@ export class GetCategoriesRequest {
   id: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   languageCode: string;
 }

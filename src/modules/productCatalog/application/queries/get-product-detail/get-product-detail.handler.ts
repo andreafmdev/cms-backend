@@ -8,6 +8,7 @@ import { GetProductDetailQuery } from './get-product-detail.query';
 import { NotFoundException } from '@nestjs/common';
 import { BrandService } from '../../services/brand.service';
 import { CategoryService } from '../../services/category.service';
+import { LanguageService } from '../../services/language.service';
 @QueryHandler(GetProductDetailQuery)
 export class GetProductDetailHandler
   implements IQueryHandler<GetProductDetailQuery>
@@ -16,13 +17,19 @@ export class GetProductDetailHandler
     private readonly productService: ProductService,
     private readonly brandService: BrandService,
     private readonly categoryService: CategoryService,
+    private readonly languageService: LanguageService,
   ) {}
 
   async execute(
     query: GetProductDetailQuery,
   ): Promise<GetProductDetailResponseDto> {
     const productId = ProductId.create(query.id);
-    const languageCode = LanguageCode.create(query.languageCode);
+    const defaultLanguage = await this.languageService.findDefaultLanguage();
+    if (!defaultLanguage) {
+      throw new NotFoundException('Default language not found');
+    }
+    const defaultLanguageCode = defaultLanguage.getCode().getValue();
+    const languageCode = LanguageCode.create(defaultLanguageCode);
     const product = await this.productService.findProductById(productId);
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -32,6 +39,7 @@ export class GetProductDetailHandler
     const category = await this.categoryService.findCategoryById(
       product.getCategoryId(),
     );
+    const images = product.getProductImages();
 
     const productAttributes =
       await this.productService.findProductCategoryAttributesWithValues(
@@ -41,7 +49,8 @@ export class GetProductDetailHandler
     return plainToInstance(GetProductDetailResponseDto, {
       id: product.getId().toString(),
       name: translation.getName(),
-      isActive: product.IsActive(),
+      isAvailable: product.IsAvailable(),
+      isFeatured: product.IsFeatured(),
       description: translation.getDescription(),
       price: product.getPrice(),
       brand: {
@@ -57,6 +66,10 @@ export class GetProductDetailHandler
           name: attribute.getName(languageCode),
         })),
       },
+      images: images.map((image) => ({
+        id: image.getId().toString(),
+        url: image.getUrl().getValue(),
+      })),
     });
   }
 }

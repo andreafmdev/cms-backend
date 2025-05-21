@@ -7,6 +7,11 @@ class BrandDto {
   name: string;
 }
 
+class ImageDto {
+  @Expose()
+  url: string;
+}
+
 class CategoryDto {
   @Expose()
   id: string;
@@ -30,14 +35,15 @@ export class GetProductDetailResponseDto {
   id: string;
   @Expose()
   name: string;
-  @Expose()
-  isActive: boolean;
+
   @Expose()
   description: string;
   @Expose()
   price: number;
   @Expose()
   isAvailable: boolean;
+  @Expose()
+  isFeatured: boolean;
   @Expose()
   @Type(() => BrandDto)
   brand: BrandDto;
@@ -46,4 +52,7 @@ export class GetProductDetailResponseDto {
   category: CategoryDto;
   @Expose()
   attributes: AttributeDto[];
+  @Expose()
+  @Type(() => ImageDto)
+  images: ImageDto[];
 }

@@ -20,7 +20,9 @@ export class CreateProductRequestDto {
   categoryId: string;
 
   @IsBoolean()
-  isActive: boolean = false;
+  isAvailable: boolean = true;
+  @IsBoolean()
+  isFeatured: boolean = false;
 
   @IsArray()
   @ValidateNested({ each: true })

@@ -59,5 +59,16 @@ export class ProductCatalogFilterDto extends BaseFilterDto {
   })
   @IsOptional()
   @IsBoolean()
-  isActive: boolean;
+  isAvailable: boolean;
+
+  @ApiProperty({
+    description: 'The is featured of the product',
+    example: true,
+    required: false,
+    type: Boolean,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isFeatured: boolean;
 }

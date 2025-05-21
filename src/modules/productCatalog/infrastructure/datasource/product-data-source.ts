@@ -7,7 +7,7 @@ import { ProductCategoryAttributeValueOrmEntity } from '@module/productCatalog/i
 import { ProductCategoryAttributeTranslationOrmEntity } from '@module/productCatalog/infrastructure/entities/product-category-attribute-translation.orm-entity';
 import { ProductCategoryAttributeOrmEntity } from '@module/productCatalog/infrastructure/entities/product-category-attribute.orm-entity';
 import { CategoryTranslationOrmEntity } from '@module/productCatalog/infrastructure/entities/category-translation.orm-entity';
-
+import { LanguageOrmEntity } from '@module/productCatalog/infrastructure/entities/language.orm-entity';
 export const ProductEntities = [
   CategoryOrmEntity,
   ProductOrmEntity,
@@ -18,4 +18,5 @@ export const ProductEntities = [
   ProductTranslationOrmEntity,
   ProductCategoryAttributeOrmEntity,
   ProductCategoryAttributeTranslationOrmEntity,
+  LanguageOrmEntity,
 ];

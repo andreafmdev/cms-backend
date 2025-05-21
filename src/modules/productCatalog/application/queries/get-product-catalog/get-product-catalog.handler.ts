@@ -9,6 +9,8 @@ import { CategoryService } from '../../services/category.service';
 import { GetProductCatalogQuery } from './get-product-catalog.query';
 import { ProductCatalogFilterDto } from '../../dto/filter/product-catalog-filter.dto';
 import { LanguageCode } from '@module/productCatalog/domain/value-objects/language-code';
+import { LanguageService } from '../../services/language.service';
+import { NotFoundException } from '@nestjs/common';
 
 @QueryHandler(GetProductCatalogQuery)
 export class GetProductCatalogHandler
@@ -18,6 +20,7 @@ export class GetProductCatalogHandler
     private readonly productService: ProductService,
     private readonly brandService: BrandService,
     private readonly categoryService: CategoryService,
+    private readonly languageService: LanguageService,
   ) {}
 
   async execute(
@@ -25,7 +28,11 @@ export class GetProductCatalogHandler
   ): Promise<PaginatedResponseDto<GetProductCatalogResponseDto>> {
     let productsResults: GetProductCatalogResponseDto[] = [];
     let filters: Partial<ProductCatalogFilterDto> = {};
-
+    const defaultLanguage = await this.languageService.findDefaultLanguage();
+    if (!defaultLanguage) {
+      throw new NotFoundException('Default language not found');
+    }
+    const defaultLanguageCode = defaultLanguage.getCode().getValue();
     if (query.filters) {
       const { page, limit, ...where } = query.filters;
       filters = { page, limit, ...where };
@@ -43,9 +50,8 @@ export class GetProductCatalogHandler
         const category = await this.categoryService.findCategoryById(
           product.getCategoryId(),
         );
-        const languageCode: LanguageCode = LanguageCode.create(
-          query.languageCode ?? 'it',
-        );
+        const languageCode: LanguageCode =
+          LanguageCode.create(defaultLanguageCode);
         const translation = product.getTranslation(languageCode);
         const categoryTranslation = category?.getTranslation(languageCode);
         return plainToInstance(GetProductCatalogResponseDto, {
@@ -53,7 +59,8 @@ export class GetProductCatalogHandler
           name: translation.getName(),
           description: translation.getDescription(),
           price: product.getPrice(),
-          isActive: product.IsActive(),
+          isAvailable: product.IsAvailable(),
+          isFeatured: product.IsFeatured(),
           brand: {
             id: brand?.getId().toString(),
             name: brand?.getName(),
@@ -63,6 +70,9 @@ export class GetProductCatalogHandler
             name: categoryTranslation?.getName(),
             description: categoryTranslation?.getDescription(),
           },
+          images: product.getProductImages().map((image) => ({
+            url: image.getUrl().toString(),
+          })),
         });
       }),
     );

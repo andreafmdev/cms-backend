@@ -191,12 +191,12 @@ describe('Product Domain Entity', () => {
         );
 
       expect(updated.getPrice()).toBe(2000);
-      expect(updated.getIsAvailable()).toBe(false);
+      expect(updated.IsAvailable()).toBe(false);
       expect(updated.getId()).toEqual(originalId);
       expect(updated.getTranslations()).toHaveLength(2);
 
       expect(product.getPrice()).toBe(1000);
-      expect(product.getIsAvailable()).toBe(true);
+      expect(product.IsAvailable()).toBe(true);
       expect(product.getTranslations()).toHaveLength(1);
     });
     describe('Update translations', () => {

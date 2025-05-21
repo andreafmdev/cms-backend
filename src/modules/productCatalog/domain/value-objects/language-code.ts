@@ -1,8 +1,6 @@
-import { ValueObject } from '@shared/kernel/ValueObject';
+import { EntityId } from '@shared/kernel/BaseDomainEntity';
 import { LanguageCodeDomainError } from '../errors/language-code-errors';
-interface LanguageCodeProps {
-  value: string;
-}
+
 export enum SupportedLanguageCodes {
   IT = 'it',
   EN = 'en',
@@ -10,9 +8,10 @@ export enum SupportedLanguageCodes {
   FR = 'fr',
   ES = 'es',
 }
-export class LanguageCode extends ValueObject<LanguageCodeProps> {
+export class LanguageCode implements EntityId<string> {
+  private readonly value: string;
   constructor(value: string) {
-    super({ value: value.toLowerCase() });
+    this.value = value;
     this.validate();
   }
   //#region FACTORY METHODS
@@ -26,14 +25,14 @@ export class LanguageCode extends ValueObject<LanguageCodeProps> {
 
   //#region GETTERS
   getValue(): string {
-    return this.props.value;
+    return this.value;
   }
   //#endregion GETTERS
 
   //#region BUSINESS LOGIC
   isSupported(): boolean {
     return Object.values(SupportedLanguageCodes).includes(
-      this.props.value as SupportedLanguageCodes,
+      this.value as SupportedLanguageCodes,
     );
   }
   //#endregion BUSINESS LOGIC
@@ -49,12 +48,15 @@ export class LanguageCode extends ValueObject<LanguageCodeProps> {
     }
   }
   private validateValue(): void {
-    if (!this.props.value) {
+    if (!this.value) {
       throw LanguageCodeDomainError.missingValue();
     }
-    if (this.props.value.length !== 2) {
+    if (this.value.length !== 2) {
       throw LanguageCodeDomainError.invalidValue();
     }
   }
   //#endregion VALIDATIONS
+  equals(other: LanguageCode): boolean {
+    return this.value === other.value;
+  }
 }

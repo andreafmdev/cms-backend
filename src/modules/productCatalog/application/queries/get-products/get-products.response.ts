@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 
 import { IsString } from 'class-validator';
 class ProductTranslationDto {
@@ -45,6 +45,8 @@ class CategoryDto {
 export class GetProductsResponseDto {
   constructor(
     id: string,
+    isAvailable: boolean,
+    isFeatured: boolean,
     translations: ProductTranslationDto[],
     brand: BrandDto,
     category: CategoryDto,
@@ -55,12 +57,17 @@ export class GetProductsResponseDto {
     this.brand = brand;
     this.category = category;
     this.price = price;
+    this.isAvailable = isAvailable;
+    this.isFeatured = isFeatured;
   }
 
   @IsString()
   @IsNotEmpty()
   id: string;
-
+  @IsBoolean()
+  isAvailable: boolean;
+  @IsBoolean()
+  isFeatured: boolean;
   @Type(() => BrandDto)
   brand: BrandDto;
 

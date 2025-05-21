@@ -1,24 +1,19 @@
-import { IsString } from 'class-validator';
+import { CategoryTranslationDto } from '../../dto/category-translation.dto';
+import { CategoryAttributeDto } from '../../dto/category-attribute.dto';
+import { ArrayNotEmpty } from 'class-validator';
+import { ValidateNested } from 'class-validator';
+import { IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateCategoryRequestDto {
-  @IsString()
-  categoryName: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ArrayNotEmpty()
+  @Type(() => CategoryTranslationDto)
+  translations: CategoryTranslationDto[];
 
-  @IsString()
-  categoryDescription: string;
-
-  @IsString()
-  languageCode: string;
-
-  @IsString()
-  attributeName: string;
-
-  @IsString()
-  attributeDescription: string;
-
-  @IsString()
-  attributeLanguageCode: string;
-
-  @IsString()
-  attributeValue: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CategoryAttributeDto)
+  attributes: CategoryAttributeDto[];
 }

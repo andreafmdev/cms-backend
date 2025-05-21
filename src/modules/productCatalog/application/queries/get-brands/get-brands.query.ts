@@ -1,5 +1,8 @@
-import { BrandFilterDto } from '@module/productCatalog/application/dto/filter/brand-filter.dto';
-
 export class GetBrandsQuery {
-  constructor(public readonly filters?: BrandFilterDto) {}
+  public readonly id?: string;
+  public readonly name?: string;
+  constructor(id?: string, name?: string) {
+    this.id = id;
+    this.name = name;
+  }
 }

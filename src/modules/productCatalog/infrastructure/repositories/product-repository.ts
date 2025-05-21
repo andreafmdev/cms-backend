@@ -49,7 +49,8 @@ export class ProductRepository
     categoryId?: string;
     brandId?: string;
     price?: number;
-    isActive?: boolean;
+    isAvailable?: boolean;
+    isFeatured?: boolean;
     page?: number;
     limit?: number;
     languageCode?: string;
@@ -58,8 +59,10 @@ export class ProductRepository
 
     const limit = filters.limit ?? process.env.DEFAULT_LIMIT;
     const page = filters.page ?? process.env.DEFAULT_PAGE;
-    query.skip(Number(page) * Number(limit)).take(Number(limit));
+    const safePage = Math.max(1, Number(page) || 1); // assicura che sia almeno 1
+    const safeLimit = Math.max(1, Number(limit) || 10); // assicura che sia almeno 1
 
+    query.skip((safePage - 1) * safeLimit).take(safeLimit);
     const ormEntities = await query.getMany();
     return ormEntities.map((orm) => this.mapper.toDomain(orm));
   }
@@ -73,7 +76,8 @@ export class ProductRepository
     categoryId?: string;
     brandId?: string;
     price?: number;
-    isActive?: boolean;
+    isAvailable?: boolean;
+    isFeatured?: boolean;
   }): Promise<number> {
     const query = this.buildSearchQuery(filters);
     return await query.getCount();
@@ -88,7 +92,8 @@ export class ProductRepository
     categoryId?: string;
     brandId?: string;
     price?: number;
-    isActive?: boolean;
+    isAvailable?: boolean;
+    isFeatured?: boolean;
     languageCode?: string;
   }) {
     const query = this.repository
@@ -98,7 +103,7 @@ export class ProductRepository
       .leftJoinAndSelect('product.attributesValues', 'attributeValue');
 
     if (filters.name) {
-      query.andWhere('translation.name LIKE :name', {
+      query.andWhere('translation.name ILIKE :name', {
         name: `%${filters.name}%`,
       });
     }
@@ -120,12 +125,16 @@ export class ProductRepository
     if (filters.price) {
       query.andWhere('product.price = :price', { price: filters.price });
     }
-    if (filters.isActive !== undefined) {
-      query.andWhere('product.isActive = :isActive', {
-        isActive: filters.isActive,
+    if (filters.isAvailable !== undefined) {
+      query.andWhere('product.isAvailable = :isAvailable', {
+        isAvailable: filters.isAvailable,
       });
     }
-
+    if (filters.isFeatured !== undefined) {
+      query.andWhere('product.isFeatured = :isFeatured', {
+        isFeatured: filters.isFeatured,
+      });
+    }
     return query;
   }
 }

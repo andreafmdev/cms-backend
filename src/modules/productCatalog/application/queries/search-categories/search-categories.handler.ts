@@ -6,22 +6,33 @@ import { SearchCategoriesQuery } from './search-categories.query';
 import { SearchCategoriesResponseDto } from './search-categories.response';
 import { CategoryService } from '../../services/category.service';
 import { LanguageCode } from '@module/productCatalog/domain/value-objects/language-code';
+import { LanguageService } from '../../services/language.service';
+import { NotFoundException } from '@nestjs/common';
 @QueryHandler(SearchCategoriesQuery)
 export class SearchCategoriesHandler
   implements IQueryHandler<SearchCategoriesQuery>
 {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(
+    private readonly categoryService: CategoryService,
+    private readonly languageService: LanguageService,
+  ) {}
 
   async execute(
     query: SearchCategoriesQuery,
   ): Promise<PaginatedResponseDto<SearchCategoriesResponseDto>> {
     let categoriesResults: SearchCategoriesResponseDto[] = [];
     const filters = query.filters;
+    const defaultLanguage = await this.languageService.findDefaultLanguage();
+    if (!defaultLanguage) {
+      throw new NotFoundException('Default language not found');
+    }
+    const defaultLanguageCode = defaultLanguage.getCode().getValue();
+    filters.languageCode = defaultLanguageCode;
     const [categories, totalCategories] = await Promise.all([
       this.categoryService.searchCategories(filters),
       this.categoryService.searchCategoriesCount(filters),
     ]);
-    const languageCode = LanguageCode.create(filters.languageCode ?? 'it');
+    const languageCode = LanguageCode.create(defaultLanguageCode);
     categoriesResults = await Promise.all(
       categories.map((category) => {
         return plainToInstance(SearchCategoriesResponseDto, {

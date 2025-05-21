@@ -11,14 +11,19 @@ import { ProductCategoryAttributeOrmEntity } from '@module/productCatalog/infras
 import { ProductCategoryAttributeValueOrmEntity } from '@module/productCatalog/infrastructure/entities/product-category-attribute-value.orm-entity';
 import { ProductCategoryAttributeTranslationOrmEntity } from '@module/productCatalog/infrastructure/entities/product-category-attribute-translation.orm-entity';
 import { ProductImageOrmEntity } from '@module/productCatalog/infrastructure/entities/product-image.orm-entity';
+import { LanguageOrmEntity } from '@module/productCatalog/infrastructure/entities/language.orm-entity';
 
 export default class ProductCatalogSeeder implements Seeder {
   private readonly logger = new Logger(ProductCatalogSeeder.name);
-  private readonly SUPPORTED_LANGUAGES = ['it', 'en'] as const;
+  private readonly SUPPORTED_LANGUAGES = [
+    { code: 'it', description: 'Italiano' },
+    { code: 'en', description: 'English' },
+  ];
 
   public async run(dataSource: DataSource): Promise<void> {
     const brandRepository = dataSource.getRepository(BrandOrmEntity);
     const categoryRepository = dataSource.getRepository(CategoryOrmEntity);
+    const languageRepository = dataSource.getRepository(LanguageOrmEntity);
     const categoryTranslationRepository = dataSource.getRepository(
       CategoryTranslationOrmEntity,
     );
@@ -44,21 +49,52 @@ export default class ProductCatalogSeeder implements Seeder {
     await queryRunner.startTransaction();
 
     try {
+      //create languages
+      await Promise.all(
+        this.SUPPORTED_LANGUAGES.map(async (languageCode) => {
+          return await languageRepository.save({
+            code: languageCode.code,
+            name: languageCode.description,
+            isActive: true,
+            isDefault: languageCode.code === 'it',
+          });
+        }),
+      );
+      const supportedLanguagesOrmEntities = await this.getLanguages(dataSource);
       this.logger.log('🚀 Starting ProductCatalogSeeder...');
 
       // 1. create brands
       this.logger.log('⚙️ Creating brands...');
-      const brandsToCreate = Array.from({ length: 3 }).map(() => ({
-        name: faker.company.name(),
+      const brandsObject = {
+        Steinway: {
+          name: 'Steinway',
+          description:
+            'Steinway & Sons è un produttore di pianoforti di lusso fondato nel 1853, noto per la qualità artigianale e il suono eccezionale dei suoi strumenti.',
+        },
+        Yamaha: {
+          name: 'Yamaha',
+          description:
+            'Yamaha Corporation è un azienda giapponese che produce una vasta gamma di strumenti musicali, inclusi pianoforti di alta qualità apprezzati per la loro affidabilità e versatilità.',
+        },
+        Fazioli: {
+          name: 'Fazioli',
+          description:
+            'Fazioli è un produttore italiano di pianoforti a coda di altissima gamma, fondato nel 1981 da Paolo Fazioli, che combina tecnologia innovativa con artigianato tradizionale.',
+        },
+      };
+      const brandsToCreate = Object.keys(brandsObject).map((key) => ({
+        name: key,
         id: faker.string.uuid(),
+        description: brandsObject[key as keyof typeof brandsObject].description,
       }));
       const brands = await brandRepository.save(brandsToCreate);
       this.logger.log(`✅ Created ${brands.length} brands`);
 
       // 2. create categories with translations
       this.logger.log('⚙️ creating categories with translations...');
+      const categoriesObject = this.buildCategoryTranslation();
       const categories = await Promise.all(
-        Array.from({ length: 3 }).map(async () => {
+        Object.keys(categoriesObject).map(async (key) => {
           // Crea la categoria
           const categoryId = faker.string.uuid();
           const category = await categoryRepository.save({
@@ -67,20 +103,21 @@ export default class ProductCatalogSeeder implements Seeder {
 
           // Crea le traduzioni per la categoria
           await Promise.all(
-            this.SUPPORTED_LANGUAGES.map(async (lang) => {
+            supportedLanguagesOrmEntities.map(async (lang) => {
+              const categoryTranslation = categoriesObject[key][lang.code];
               return await categoryTranslationRepository.save({
                 categoryId: category.id,
-                languageCode: lang,
-                name: faker.commerce.department(),
-                description: faker.commerce.productDescription(),
+                languageCode: lang.code,
+                name: categoryTranslation.name,
+                description: categoryTranslation.description,
               });
             }),
           );
           // Crea attributi per la categoria
           const attributeNames = [
-            faker.helpers.arrayElement(['Colore']),
-            faker.helpers.arrayElement(['Peso']),
-            faker.helpers.arrayElement(['Marca']),
+            faker.helpers.arrayElement(['Colore', 'Numero Tasti']),
+            faker.helpers.arrayElement(['Peso', 'Anno']),
+            faker.helpers.arrayElement(['Marca', 'Materiale']),
           ];
 
           // Crea gli attributi per la categoria
@@ -94,13 +131,13 @@ export default class ProductCatalogSeeder implements Seeder {
 
               // Crea le traduzioni per l'attributo
               await Promise.all(
-                this.SUPPORTED_LANGUAGES.map(async (languageCode) => {
+                supportedLanguagesOrmEntities.map(async (lang) => {
                   return await productAttributeTranslationRepository.save({
                     attributeId: attribute.id,
-                    languageCode,
+                    languageCode: lang.code,
                     value: this.getAttributeTranslation(
                       attributeName,
-                      languageCode,
+                      lang.code,
                     ),
                   });
                 }),
@@ -138,10 +175,10 @@ export default class ProductCatalogSeeder implements Seeder {
 
           // Create Translations for product
           const translations = await Promise.all(
-            this.SUPPORTED_LANGUAGES.map(async (languageCode) => {
+            supportedLanguagesOrmEntities.map(async (lang) => {
               return await productTranslationRepository.save({
                 productId: product.id,
-                languageCode,
+                languageCode: lang.code,
                 name: faker.commerce.productName(),
                 description: faker.commerce.productDescription(),
               });
@@ -188,21 +225,6 @@ export default class ProductCatalogSeeder implements Seeder {
     }
   }
 
-  private getRandomAttributeValue(attributeName: string): string {
-    const valuesByAttribute = {
-      Colore: ['Rosso', 'Blu', 'Verde', 'Nero', 'Bianco'],
-      Dimensione: ['S', 'M', 'L', 'XL'],
-      Materiale: ['Legno', 'Metallo', 'Plastica', 'Vetro'],
-      Peso: ['100g', '200g', '300g', '400g'],
-      Marca: ['Apple', 'Samsung', 'Sony', 'LG'],
-      Modello: ['iPhone 15', 'Galaxy S23', 'Sony A7', 'LG G9'],
-    };
-    return faker.helpers.arrayElement(
-      valuesByAttribute[attributeName as keyof typeof valuesByAttribute] || [
-        'N/A',
-      ],
-    );
-  }
   private getAttributeTranslation(
     attributeName: string,
     languageCode: string,
@@ -217,8 +239,68 @@ export default class ProductCatalogSeeder implements Seeder {
       Marca: { it: 'Marca', en: 'Brand' },
       Modello: { it: 'Modello', en: 'Model' },
       Anno: { it: 'Anno', en: 'Year' },
+      NumeroTasti: { it: 'Numero Tasti', en: 'Number of Keys' },
     };
 
     return translations[attributeName]?.[languageCode] || attributeName;
+  }
+  private buildCategoryTranslation(): Record<
+    string,
+    Record<string, { name: string; description: string }>
+  > {
+    const categoryTranslations: Record<
+      string,
+      Record<string, { name: string; description: string }>
+    > = {
+      Pianoforti: {
+        it: {
+          name: 'Pianoforti',
+          description: 'I pianoforti sono strumenti musicali a corde percosse.',
+        },
+        en: {
+          name: 'Pianoforti',
+          description: 'Pianos are stringed musical instruments.',
+        },
+      },
+      Tastiere: {
+        it: {
+          name: 'Tastiere',
+          description: 'Le tastiere sono strumenti musicali elettronici.',
+        },
+        en: {
+          name: 'Keyboards',
+          description: 'Keyboards are electronic musical instruments.',
+        },
+      },
+      Chitarre: {
+        it: {
+          name: 'Chitarre',
+          description: 'Le chitarre sono strumenti musicali a corde perse.',
+        },
+        en: {
+          name: 'Guitars',
+          description: 'Guitars are stringed musical instruments.',
+        },
+      },
+      Violini: {
+        it: {
+          name: 'Violini',
+          description: 'Le violini sono strumenti musicali a corde perse.',
+        },
+        en: {
+          name: 'Violins',
+          description: 'Violins are stringed musical instruments.',
+        },
+      },
+    };
+    return categoryTranslations;
+  }
+
+  private async getLanguages(
+    dataSource: DataSource,
+  ): Promise<LanguageOrmEntity[]> {
+    const languageRepository = dataSource.getRepository(LanguageOrmEntity);
+    const languages = await languageRepository.find();
+    return languages;
   }
 }

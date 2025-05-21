@@ -1,13 +1,13 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
 import { IsString } from 'class-validator';
 
-export class GetBrandsRequest {
+export class GetBrandsRequestDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   id: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 }

@@ -1,5 +1,14 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { RequireGroup } from '@module/auth/decorator/auth.decorator';
 import {
   ApiBearerAuth,
@@ -11,26 +20,34 @@ import { CategoryFilterDto } from './application/dto/filter/category-filter.dto'
 import { PaginatedResponseDto } from '../../shared/dto/paginated.response.dto';
 import { GetCategoriesResponseDto } from './application/queries/get-categories/get-categories.response';
 import { GetCategoriesQuery } from './application/queries/get-categories/get-categories.query';
-import { SearchCategoriesTreeRequest } from './application/queries/search-category-tree/search-categories-tree.request';
-import { SearchCategoriesTreeQuery } from './application/queries/search-category-tree/search-categories-tree.query';
-import { SearchCategoriesTreeResponse } from './application/queries/search-category-tree/search-categories-tree.response';
+import { SearchCategoryOptionsRequest } from './application/queries/search-category-tree/search-category-options.request';
+import { SearchCategoryOptionsQuery } from './application/queries/search-category-tree/search-category-options.query';
+import { SearchCategoryOptionsResponse } from './application/queries/search-category-tree/search-category-options.response';
 import { SearchCategoriesRequestDto } from './application/queries/search-categories/search-categories.request';
 import { SearchCategoriesQuery } from './application/queries/search-categories/search-categories.query';
 import { SearchCategoriesResponseDto } from './application/queries/search-categories/search-categories.response';
 import { GetCategoryDetailRequestDto } from './application/queries/get-category-detail/get-category-detail.request';
 import { GetCategoryDetailQuery } from './application/queries/get-category-detail/get-category-detail.query';
 import { GetCategoryDetailResponseDto } from './application/queries/get-category-detail/get-category-detail.response';
+import { CreateCategoryRequestDto } from './application/commands/create-category/create-category.request';
+import { CreateCategoryResponseDto } from './application/commands/create-category/create-category.response';
+import { CreateCategoryCommand } from './application/commands/create-category/create-category.command';
+import { DeleteCategoryResponse } from './application/commands/delete-category/delete-category.response';
+import { DeleteCategoryCommand } from './application/commands/delete-category/delete-category.command';
 @Controller('categories')
 export class CategoryController {
-  constructor(private readonly queryBus: QueryBus) {}
-
+  constructor(
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
+  ) {}
+  //test
   @RequireGroup('ADMIN')
   @Get('test')
   async test(): Promise<string> {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return 'test';
   }
-
+  //get all categories
   @Get()
   @RequireGroup('ADMIN')
   @ApiOperation({ summary: 'Get all categories' })
@@ -46,23 +63,22 @@ export class CategoryController {
   ): Promise<PaginatedResponseDto<GetCategoriesResponseDto>> {
     return await this.queryBus.execute(new GetCategoriesQuery(request));
   }
-
-  @Post('category-tree')
-  @RequireGroup('ADMIN')
-  @ApiOperation({ summary: 'Get category tree' })
+  //search category options
+  @Post('options')
+  @ApiOperation({ summary: 'Search category options' })
   @ApiResponse({
     status: 200,
-    description: 'Category tree found successfully',
+    description: 'Category options found successfully',
   })
-  @ApiBearerAuth()
-  getCategoryTree(
-    @Body() request: SearchCategoriesTreeRequest,
-  ): Promise<SearchCategoriesTreeResponse[]> {
+  @ApiQuery({ type: SearchCategoryOptionsRequest })
+  searchCategoryOptions(
+    @Body() request: SearchCategoryOptionsRequest,
+  ): Promise<SearchCategoryOptionsResponse[]> {
     return this.queryBus.execute(
-      new SearchCategoriesTreeQuery(request.name, request.languageCode),
+      new SearchCategoryOptionsQuery(request.name, request.languageCode),
     );
   }
-  //search category by name
+  //search category by params
   @Post('search')
   @HttpCode(200)
   @RequireGroup('ADMIN')
@@ -94,5 +110,25 @@ export class CategoryController {
     return this.queryBus.execute(
       new GetCategoryDetailQuery(request.id, request.languageCode),
     );
+  }
+  //create category
+  @Post()
+  @RequireGroup('ADMIN')
+  @ApiOperation({ summary: 'Create category' })
+  @ApiBearerAuth()
+  createCategory(
+    @Body() request: CreateCategoryRequestDto,
+  ): Promise<CreateCategoryResponseDto> {
+    return this.commandBus.execute(
+      new CreateCategoryCommand(request.translations, request.attributes),
+    );
+  }
+  //delete category
+  @Delete(':id')
+  @RequireGroup('ADMIN')
+  @ApiOperation({ summary: 'Delete category' })
+  @ApiBearerAuth()
+  deleteCategory(@Param('id') id: string): Promise<DeleteCategoryResponse> {
+    return this.commandBus.execute(new DeleteCategoryCommand(id));
   }
 }

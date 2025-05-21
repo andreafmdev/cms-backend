@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { IsNotEmpty } from 'class-validator';
 
-export class SearchCategoriesTreeResponse {
+export class SearchCategoryOptionsResponse {
   constructor() {}
   @ApiProperty({
     description: 'The id of the category',

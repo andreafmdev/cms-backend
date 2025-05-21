@@ -10,9 +10,4 @@ export class GetBrandsResponseDto {
   @IsString()
   @IsNotEmpty()
   name: string;
-
-  constructor(id: string, name: string) {
-    this.id = id;
-    this.name = name;
-  }
 }

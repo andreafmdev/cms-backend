@@ -114,6 +114,7 @@ export class CategoryRepository
 
     return results;
   }
+
   private buildSearchQuery(filters: { name?: string; languageCode?: string }) {
     const query = this.repository.createQueryBuilder('categories');
     query.leftJoinAndSelect('categories.translations', 'translation');

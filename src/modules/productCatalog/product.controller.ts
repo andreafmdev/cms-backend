@@ -2,7 +2,15 @@ import { RequireGroup } from '@module/auth/decorator/auth.decorator';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { QueryBus, CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { Body, Get, HttpCode, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { PaginatedResponseDto } from '@shared/dto/paginated.response.dto';
 import { ProductFilterDto } from './application/dto/filter/product-filter.dto';
 import { GetProductsResponseDto } from './application/queries/get-products/get-products.response';
@@ -10,7 +18,6 @@ import { GetProductsQuery } from './application/queries/get-products/get-product
 import { ApiTags } from '@nestjs/swagger';
 import { Controller } from '@nestjs/common';
 import { CreateProductCommand } from './application/commands/create-product/create-product.command';
-import { CreateProductRequestDto } from './application/commands/create-product/create-product.request';
 import { CreateProductResponseDto } from './application/commands/create-product/create-product.response';
 import { GetProductCatalogQuery } from './application/queries/get-product-catalog/get-product-catalog.query';
 import { GetProductCatalogResponseDto } from './application/queries/get-product-catalog/get-product-catalog.response';
@@ -21,6 +28,14 @@ import { SearchProductsRequestDto } from './application/queries/search-products/
 import { GetProductDetailQuery } from './application/queries/get-product-detail/get-product-detail.query';
 import { GetProductDetailResponseDto } from './application/queries/get-product-detail/get-product-detail.response';
 import { GetProductDetailRequestDto } from './application/queries/get-product-detail/get-product-detail.request';
+import {
+  FileFieldsInterceptor,
+  MemoryStorageFile,
+  UploadedFiles,
+} from '@x6tech/nest-file-fastify';
+import { RawCreateProductRequest } from './application/commands/create-product/raw-create-product.command';
+import { ProductTranslationDto } from './application/dto/product-translation.dto';
+
 @ApiTags('Products')
 @Controller('products')
 export class ProductController {
@@ -80,24 +95,29 @@ export class ProductController {
   @RequireGroup('ADMIN')
   @ApiOperation({ summary: 'Create a new product' })
   @ApiBearerAuth()
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'images', maxCount: 5 }, // o il numero che vuoi
+    ]),
+  )
   async createProduct(
-    @Body() request: CreateProductRequestDto,
+    @Body() request: RawCreateProductRequest,
+    @UploadedFiles() files: { images?: MemoryStorageFile[] },
   ): Promise<CreateProductResponseDto> {
     const command = new CreateProductCommand(
-      request.price,
+      parseFloat(request.price),
       request.brandId,
       request.categoryId,
-      request.isActive,
-      request.translations,
-      [],
+      request.isAvailable === 'true',
+      request.isFeatured === 'true',
+      JSON.parse(request.translations) as ProductTranslationDto[],
+      files.images ?? [],
     );
     return await this.commandBus.execute(command);
   }
   //get product catalog
   @Get('catalog')
-  @RequireGroup('ADMIN')
   @ApiOperation({ summary: 'Get product catalog' })
-  @ApiBearerAuth()
   async getProductCatalog(
     @Query() request: ProductCatalogFilterDto,
   ): Promise<PaginatedResponseDto<GetProductCatalogResponseDto>> {
@@ -106,14 +126,18 @@ export class ProductController {
     return await this.queryBus.execute(query);
   }
   //get product detail
-  @Get('detail')
+  @Get('detail/:id')
   @RequireGroup('ADMIN')
   @ApiOperation({ summary: 'Get product detail' })
   @ApiBearerAuth()
   async getProductDetail(
+    @Param('id') id: string,
     @Query() request: GetProductDetailRequestDto,
   ): Promise<GetProductDetailResponseDto> {
-    const query = new GetProductDetailQuery(request.id, request.languageCode);
+    const query = new GetProductDetailQuery(id, request.languageCode);
     return await this.queryBus.execute(query);
   }
+  //create brand
+
+  //update brand
 }

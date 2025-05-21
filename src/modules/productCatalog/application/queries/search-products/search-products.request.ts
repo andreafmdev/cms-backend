@@ -22,9 +22,13 @@ export class SearchProductsRequestDto extends BaseFilterDto {
 
   @IsBoolean()
   @IsOptional()
-  isActive: boolean;
+  isAvailable: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isFeatured: boolean;
 
   @IsString()
   @IsOptional()
-  languageCode: string = 'it';
+  languageCode;
 }
