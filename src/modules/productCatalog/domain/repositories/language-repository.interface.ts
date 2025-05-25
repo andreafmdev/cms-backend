@@ -5,4 +5,5 @@ export interface ILanguageRepository {
   createLanguage(language: Language): Promise<Language>;
   findAllLanguages(): Promise<Language[]>;
   findLanguageById(id: LanguageCode): Promise<Language | null>;
+  findActiveLanguageByCode(code: LanguageCode): Promise<Language | null>;
 }

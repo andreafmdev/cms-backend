@@ -100,14 +100,15 @@ describe('ProductCategoryAttribute Domain Entity', () => {
           translations: [translation],
           categoryId,
         });
-        const updatedAttribute = attribute.update({
-          translations: [newTranslation],
-        });
+        const updatedAttribute = attribute.updateTranslation(
+          LanguageCode.create(TEST_CONSTANTS.LANGUAGE_CODE.EN),
+          newTranslation.getValue(),
+        );
         expect(updatedAttribute).toBeDefined();
         expect(attribute.getTranslations()).toHaveLength(1);
         expect(attribute.getTranslations()[0]).toEqual(translation);
-        expect(updatedAttribute.getTranslations()).toHaveLength(1);
-        expect(updatedAttribute.getTranslations()[0]).toEqual(newTranslation);
+        expect(attribute.getTranslations()).toHaveLength(1);
+        expect(attribute.getTranslations()[0]).toEqual(newTranslation);
       });
     });
   });

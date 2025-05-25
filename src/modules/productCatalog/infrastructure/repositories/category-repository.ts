@@ -46,10 +46,20 @@ export class CategoryRepository
     const createdCategoryOrm = await super.save(category);
     return createdCategoryOrm;
   }
+  /**
+   * Find all categories
+   * @returns The category domain entities (Category[])
+   */
   async findAllCategories(): Promise<Category[]> {
     const categoryOrms = await super.findAll();
     return categoryOrms;
   }
+  /**
+   * Find all categories by translation name and language code
+   * @param name - The name of the category to find
+   * @param languageCode - The language code of the category to find
+   * @returns The category domain entities if found, otherwise an empty array (Category[])
+   */
   async findAllByTranslationNameAndLanguage(
     name?: string,
     languageCode?: string,
@@ -70,6 +80,31 @@ export class CategoryRepository
     const ormEntities = await query.getMany();
     return ormEntities.map((orm) => this.mapper.toDomain(orm));
   }
+  /**
+   * Find a category by its name and language code
+   * @param name - The name of the category to find
+   * @param languageCode - The language code of the category to find
+   * @param id - The ID of the category to exclude from the search
+   * @returns The category domain entity if found, otherwise null (Category | null)
+   */
+  async findExistingCategoryTranslation(
+    name: string,
+    languageCode: string,
+    id: string,
+  ): Promise<Category | null> {
+    const categoryOrm = await this.repository
+      .createQueryBuilder('category')
+      .leftJoinAndSelect('category.translations', 'translation')
+      .leftJoinAndSelect('category.attributes', 'attribute')
+      .leftJoinAndSelect('attribute.translations', 'attributeTranslation')
+      .where('LOWER(translation.name) LIKE LOWER(:name)', { name: `%${name}%` })
+      .andWhere('translation.languageCode = :languageCode', { languageCode })
+      .andWhere('category.id != :id', { id: id })
+      .getOne();
+
+    return categoryOrm ? this.mapper.toDomain(categoryOrm) : null;
+  }
+
   async searchCategories(filters: {
     name?: string;
     languageCode?: string;
@@ -90,6 +125,12 @@ export class CategoryRepository
     const query = this.buildSearchQuery(filters);
     return await query.getCount();
   }
+  /**
+   * Find product category attributes with values
+   * @param productId - The ID of the product to find
+   * @param languageCode - The language code of the category to find
+   * @returns The product category attributes with values (AttributeWithValue[])
+   */
   async findProductCategoryAttributesWithValues(
     productId: string,
     languageCode: string,
@@ -114,7 +155,11 @@ export class CategoryRepository
 
     return results;
   }
-
+  /**
+   * Build a search query for categories
+   * @param filters - The filters to apply to the query
+   * @returns The built query (SelectQueryBuilder)
+   */
   private buildSearchQuery(filters: { name?: string; languageCode?: string }) {
     const query = this.repository.createQueryBuilder('categories');
     query.leftJoinAndSelect('categories.translations', 'translation');

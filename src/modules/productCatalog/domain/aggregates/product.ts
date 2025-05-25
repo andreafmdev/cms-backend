@@ -36,19 +36,100 @@ export interface ReconstituteProps extends ProductProps {
 //#endregion INTERFACES
 export class Product extends AggregateRoot<ProductId> {
   //#region PROPERTIES
-  private readonly price: number;
-  private readonly isAvailable: boolean;
-  private readonly isFeatured: boolean;
-  private readonly image: ProductImage[];
-  private readonly brandId: BrandId;
-  private readonly categoryId: CategoryId;
-  private readonly translations: ProductTranslation[];
-  private readonly attributesValues: ProductCategoryAttributeValue[];
+  private price: number;
+  private isAvailable: boolean;
+  private isFeatured: boolean;
+  private image: ProductImage[];
+  private brandId: BrandId;
+  private categoryId: CategoryId;
+  private translations: ProductTranslation[];
+  private attributesValues: ProductCategoryAttributeValue[];
   private static readonly DEFAULT_IS_AVAILABLE = true;
   private static readonly DEFAULT_IS_FEATURED = false;
-  private static readonly DEFAULT_LANGUAGE_CODE = 'it';
+  private static readonly DEFAULT_LANGUAGE_CODE =
+    process.env.DEFAULT_LANGUAGE_CODE;
   private static readonly MIN_PRICE = 0;
   //#endregion PROPERTIES
+
+  //#region ATOMIC VALIDATORS
+  private static validatePriceValue(price: number): void {
+    if (price === null || price === undefined || price <= Product.MIN_PRICE) {
+      throw ProductDomainError.invalidPrice(price ?? 0);
+    }
+  }
+
+  private static validateCategoryValue(categoryId: CategoryId): void {
+    if (!categoryId) {
+      throw ProductDomainError.missingCategory();
+    }
+  }
+
+  private static validateBrandValue(brandId: BrandId): void {
+    if (!brandId) {
+      throw ProductDomainError.missingBrand();
+    }
+  }
+
+  private static validateAttributeValueString(value: string): void {
+    if (!value) {
+      throw ProductDomainError.invalidAttributeValue(value);
+    }
+  }
+
+  private static validateTranslationsArray(
+    translations: ProductTranslation[],
+  ): void {
+    if (!translations || translations.length === 0) {
+      throw ProductDomainError.noTranslations();
+    }
+
+    const languageCodes = new Set<string>();
+    for (const translation of translations) {
+      const code = translation.getLanguageCode().getValue();
+      if (languageCodes.has(code)) {
+        throw ProductDomainError.duplicateTranslation(
+          LanguageCode.create(code),
+        );
+      }
+      languageCodes.add(code);
+    }
+  }
+  //#endregion
+
+  //#region ORCHESTRATION
+  private static validateForCreation(props: CreateProductProps): void {
+    this.validatePriceValue(props.price);
+    this.validateCategoryValue(props.categoryId);
+    this.validateBrandValue(props.brandId);
+    this.validateTranslationsArray(props.translations);
+  }
+
+  private static validateForUpdate(props: UpdateProductProps): void {
+    if ('price' in props && props.price !== undefined) {
+      this.validatePriceValue(props.price);
+    }
+
+    if ('categoryId' in props && props.categoryId !== undefined) {
+      this.validateCategoryValue(props.categoryId);
+    }
+
+    if ('brandId' in props && props.brandId !== undefined) {
+      this.validateBrandValue(props.brandId);
+    }
+
+    if ('translations' in props && props.translations !== undefined) {
+      this.validateTranslationsArray(props.translations);
+    }
+  }
+
+  private static validatePriceUpdate(price: number): void {
+    this.validatePriceValue(price);
+  }
+
+  private static validateAttributeUpdate(value: string): void {
+    this.validateAttributeValueString(value);
+  }
+  //#endregion
 
   //#region CONSTRUCTOR
   private constructor(
@@ -63,7 +144,7 @@ export class Product extends AggregateRoot<ProductId> {
     id: ProductId,
   ) {
     super(id);
-    Product.validateInvariants({
+    Product.validateForCreation({
       price,
       isAvailable,
       isFeatured,
@@ -72,6 +153,7 @@ export class Product extends AggregateRoot<ProductId> {
       categoryId,
       translations,
       attributesValues,
+      id,
     });
 
     this.price = price;
@@ -144,95 +226,6 @@ export class Product extends AggregateRoot<ProductId> {
 
   //#endregion FACTORY METHODS
 
-  //#region VALIDATION
-
-  ///#region UPDATE VALIDATION
-  private static validatePriceUpdate(props: UpdateProductProps): void {
-    if (!('price' in props)) return;
-
-    if (
-      props.price === null ||
-      props.price === undefined ||
-      props.price <= Product.MIN_PRICE
-    ) {
-      throw ProductDomainError.invalidPrice(props.price ?? 0);
-    }
-  }
-
-  private static validateCategoryUpdate(props: UpdateProductProps): void {
-    if (!('categoryId' in props)) return;
-
-    if (!props.categoryId) {
-      throw ProductDomainError.missingCategory();
-    }
-  }
-  private static validateBrandUpdate(props: UpdateProductProps): void {
-    if (!('brandId' in props)) return;
-
-    if (!props.brandId) {
-      throw ProductDomainError.missingBrand();
-    }
-  }
-
-  private static validateAttributeValue(newValue: string): void {
-    if (!newValue) {
-      throw ProductDomainError.invalidAttributeValue(newValue);
-    }
-  }
-  private static validateTranslationsUpdate(props: UpdateProductProps): void {
-    if (!('translations' in props)) return;
-
-    if (!props.translations?.length) {
-      throw ProductDomainError.noTranslations();
-    }
-  }
-  private static validateTranslations(props: UpdateProductProps): void {
-    if (!props.translations) return;
-
-    // Check if translations array is empty
-    if (
-      this.isNullOrUndefined(props.translations) ||
-      props.translations.length === 0
-    ) {
-      throw ProductDomainError.noTranslations();
-    }
-
-    // Check for duplicate translations
-    const languageCodes = new Set<string>();
-    for (const translation of props.translations) {
-      const code = translation.getLanguageCode().getValue();
-      if (languageCodes.has(code)) {
-        throw ProductDomainError.duplicateTranslation(
-          LanguageCode.create(code),
-        );
-      }
-      languageCodes.add(code);
-    }
-  }
-  private static validateUpdate(props: UpdateProductProps): void {
-    this.validatePriceUpdate(props);
-    this.validateBrandUpdate(props);
-    this.validateCategoryUpdate(props);
-    this.validateTranslationsUpdate(props);
-  }
-  //#endregion UPDATE VALIDATION
-
-  private static validateInvariants(props: Partial<ProductProps>): void {
-    if (
-      this.isNullOrUndefined(props.price) ||
-      props.price <= Product.MIN_PRICE
-    ) {
-      throw ProductDomainError.invalidPrice(props.price ?? 0);
-    }
-    //product translations
-    Product.validateTranslations(props);
-    //product category
-    if (this.isNullOrUndefined(props.categoryId)) {
-      throw ProductDomainError.missingCategory();
-    }
-  }
-  //#endregion VALIDATION
-
   //#region GETTERS
   IsAvailable(): boolean {
     return this.isAvailable;
@@ -256,7 +249,7 @@ export class Product extends AggregateRoot<ProductId> {
       this.translations.find((t) =>
         t
           .getLanguageCode()
-          .equals(LanguageCode.create(Product.DEFAULT_LANGUAGE_CODE)),
+          .equals(LanguageCode.create(Product.DEFAULT_LANGUAGE_CODE!)),
       ) ??
       this.translations[0] // fallback to first localization
     );
@@ -282,44 +275,37 @@ export class Product extends AggregateRoot<ProductId> {
   //#endregion GETTERS
 
   //#region BUSINESS METHODS
-  update(props: UpdateProductProps): Product {
-    Product.validateUpdate(props);
+  update(props: UpdateProductProps): void {
+    Product.validateForUpdate(props);
 
-    return new Product(
-      props.price ?? this.price,
-      props.isAvailable ?? this.isAvailable,
-      props.isFeatured ?? this.isFeatured,
-      props.image ?? this.image,
-      props.translations ?? this.translations,
-      props.attributesValues ?? this.attributesValues,
-      props.brandId ?? this.brandId,
-      props.categoryId ?? this.categoryId,
-      this.getId(),
-    );
+    if (props.price !== undefined) this.price = props.price;
+    if (props.isAvailable !== undefined) this.isAvailable = props.isAvailable;
+    if (props.isFeatured !== undefined) this.isFeatured = props.isFeatured;
+    if (props.image !== undefined) this.image = props.image;
+    if (props.translations !== undefined)
+      this.translations = props.translations;
+    if (props.attributesValues !== undefined)
+      this.attributesValues = props.attributesValues;
+    if (props.brandId !== undefined) this.brandId = props.brandId;
+    if (props.categoryId !== undefined) this.categoryId = props.categoryId;
   }
 
-  updatePrice(price: number): Product {
-    return this.update({ price });
+  updatePrice(price: number): void {
+    Product.validatePriceUpdate(price);
+    this.price = price;
   }
 
-  updateIsAvailable(isAvailable: boolean): Product {
-    return this.update({ isAvailable });
+  updateIsAvailable(isAvailable: boolean): void {
+    this.update({ isAvailable });
   }
 
-  //#region BUSINESS METHODS
   /**
    * Add an attribute
    * @param value - The value of the attribute
    * @param attributeId - The ID of the attribute
    * @returns The updated product
    */
-  addAttribute(
-    value: string,
-    attributeId: ProductCategoryAttributeId,
-  ): Product {
-    /*if (!this.hasAttribute(attributeId)) {
-      throw ProductDomainError.attributeNotFound(attributeId);
-    }*/
+  addAttribute(value: string, attributeId: ProductCategoryAttributeId): void {
     const existingValue = this.findAttribute(attributeId);
 
     const newValue = ProductCategoryAttributeValue.create({
@@ -329,29 +315,26 @@ export class Product extends AggregateRoot<ProductId> {
     });
 
     if (existingValue) {
-      const updatedAttributes = this.attributesValues.map((attr) =>
-        attr.hasAttributeId(attributeId) ? newValue : attr,
+      const index = this.attributesValues.findIndex((attr) =>
+        attr.hasAttributeId(attributeId),
       );
-      return this.update({ attributesValues: updatedAttributes });
+      this.attributesValues[index] = newValue;
+    } else {
+      this.attributesValues.push(newValue);
     }
-
-    // 5. Otherwise add new
-    return this.update({
-      attributesValues: [...this.attributesValues, newValue],
-    });
   }
+
   /**
    * Remove an attribute
    * @param attributeId - The ID of the attribute
    * @returns The updated product
    */
-  removeAttribute(attributeId: ProductCategoryAttributeId): Product {
-    return this.update({
-      attributesValues: this.attributesValues.filter(
-        (attr) => !attr.hasAttributeId(attributeId),
-      ),
-    });
+  removeAttribute(attributeId: ProductCategoryAttributeId): void {
+    this.attributesValues = this.attributesValues.filter(
+      (attr) => !attr.hasAttributeId(attributeId),
+    );
   }
+
   /**
    * Update an attribute
    * @param attributeId - The ID of the attribute
@@ -361,19 +344,21 @@ export class Product extends AggregateRoot<ProductId> {
   updateAttribute(
     attributeId: ProductCategoryAttributeId,
     newValue: string,
-  ): Product {
-    Product.validateAttributeValue(newValue);
+  ): void {
+    Product.validateAttributeUpdate(newValue);
 
     if (!this.hasAttribute(attributeId)) {
-      return this.addAttribute(newValue, attributeId);
+      this.addAttribute(newValue, attributeId);
+      return;
     }
 
-    return this.update({
-      attributesValues: this.attributesValues.map((attr) =>
-        attr.hasAttributeId(attributeId) ? attr.updateValue(newValue) : attr,
-      ),
-    });
+    const index = this.attributesValues.findIndex((attr) =>
+      attr.hasAttributeId(attributeId),
+    );
+    this.attributesValues[index] =
+      this.attributesValues[index].updateValue(newValue);
   }
+
   /**
    * Find an attribute by its ID
    * @param attributeId - The ID of the attribute
@@ -395,15 +380,14 @@ export class Product extends AggregateRoot<ProductId> {
   hasAttribute(attributeId: ProductCategoryAttributeId): boolean {
     return this.findAttribute(attributeId) !== undefined;
   }
-  addTranslation(translation: ProductTranslation): Product {
+
+  addTranslation(translation: ProductTranslation): void {
     if (this.hasTranslation(translation.getLanguageCode())) {
       throw ProductDomainError.duplicateTranslation(
         translation.getLanguageCode(),
       );
     }
-    return this.update({
-      translations: [...this.translations, translation],
-    });
+    this.translations.push(translation);
   }
 
   /**
@@ -411,32 +395,37 @@ export class Product extends AggregateRoot<ProductId> {
    * @param languageCode - The language code of the translation
    * @returns The updated product
    */
-  removeTranslation(languageCode: LanguageCode): Product {
-    if (this.hasTranslation(languageCode)) {
-      return this.update({
-        translations: this.translations.filter(
-          (t) => !t.getLanguageCode().equals(languageCode),
-        ),
-      });
+  removeTranslation(languageCode: LanguageCode): void {
+    const index = this.translations.findIndex((t) =>
+      t.getLanguageCode().equals(languageCode),
+    );
+
+    if (index !== -1) {
+      this.translations.splice(index, 1);
     } else {
       throw ProductDomainError.translationNotFound(languageCode);
     }
   }
+
   /**
    * Add an image to the product
    * @param image - The image to add
    * @returns The updated product
    */
-  addImage(image: ProductImage): Product {
-    return this.update({ image: [...this.image, image] });
+  addImage(image: ProductImage): void {
+    this.image.push(image);
   }
+
   /**
    * Remove an image from the product
    * @param image - The image to remove
    * @returns The updated product
    */
-  removeImage(image: ProductImage): Product {
-    return this.update({ image: this.image.filter((i) => i !== image) });
+  removeImage(image: ProductImage): void {
+    const index = this.image.indexOf(image);
+    if (index !== -1) {
+      this.image.splice(index, 1);
+    }
   }
   //#endregion BUSINESS METHODS
 }

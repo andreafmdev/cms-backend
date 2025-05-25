@@ -26,7 +26,7 @@ export type UpdateBrandProps = Partial<BrandProps>;
 
 export class Brand extends AggregateRoot<BrandId> {
   //#region PROPERTIES
-  private readonly name: string;
+  private name: string;
   //#endregion PROPERTIES
 
   //#region CONSTRUCTOR
@@ -59,11 +59,16 @@ export class Brand extends AggregateRoot<BrandId> {
 
   //#region VALIDATIONS
   private static validateInvariants(props: Partial<BrandProps>): void {
-    if (this.isNullOrUndefined(props.name) || props.name.trim() === '') {
+    if (this.isNullOrUndefined(props.name)) {
+      throw BrandDomainError.missingName();
+    }
+    this.validateName(props.name);
+  }
+  private static validateName(name: string): void {
+    if (name.trim() === '' || name.length < 2) {
       throw BrandDomainError.missingName();
     }
   }
-
   //#endregion VALIDATIONS
 
   //#region GETTERS
@@ -77,14 +82,16 @@ export class Brand extends AggregateRoot<BrandId> {
   //#endregion GETTERS
 
   //#region BUSINESS METHODS
-  update(props: UpdateBrandProps): Brand {
-    if (Object.keys(props).length === 0) {
-      return this;
+  update(props: UpdateBrandProps): void {
+    if (props.name !== undefined) {
+      Brand.validateName(props.name);
+      this.name = props.name;
     }
-    return new Brand(props.name ?? this.name, this.getId());
   }
-  updateName(name: string): Brand {
-    return this.update({ name });
+
+  updateName(name: string): void {
+    Brand.validateName(name);
+    this.name = name;
   }
   //#endregion BUSINESS METHODS
 }

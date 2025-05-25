@@ -7,6 +7,7 @@ import {
   ManyToOne,
   PrimaryColumn,
   Relation,
+  Unique,
 } from 'typeorm';
 import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entities/category.orm-entity';
 
@@ -21,6 +22,7 @@ import { CategoryOrmEntity } from '@module/productCatalog/infrastructure/entitie
  */
 @Entity('category_translations')
 @Index(['categoryId', 'languageCode'], { unique: true })
+@Unique(['languageCode', 'name'])
 export class CategoryTranslationOrmEntity extends BaseEntity {
   @PrimaryColumn({
     name: 'category_id',

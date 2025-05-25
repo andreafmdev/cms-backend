@@ -137,7 +137,4 @@ export class ProductController {
     const query = new GetProductDetailQuery(id, request.languageCode);
     return await this.queryBus.execute(query);
   }
-  //create brand
-
-  //update brand
 }

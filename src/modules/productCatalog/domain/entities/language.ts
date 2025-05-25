@@ -15,12 +15,16 @@ interface ReconstituteLanguageProps {
   isDefault: boolean;
 }
 //#endregion INTERFACES
-
+interface UpdateLanguageProps {
+  name?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+}
 export class Language extends BaseDomainEntity<LanguageCode> {
   //#region PROPERTIES
-  private readonly name: string;
-  private readonly isActive: boolean;
-  private readonly isDefault: boolean;
+  private name: string;
+  private isActive: boolean;
+  private isDefault: boolean;
   //#endregion PROPERTIES
 
   //#region CONSTRUCTOR
@@ -99,4 +103,35 @@ export class Language extends BaseDomainEntity<LanguageCode> {
   }
 
   //#endregion GETTERS
+
+  //#region MUTATORS
+  updateName(name: string): void {
+    Language.validateInvariants({ name });
+    this.name = name;
+  }
+
+  activate(): void {
+    this.isActive = true;
+  }
+
+  deactivate(): void {
+    this.isActive = false;
+  }
+
+  setAsDefault(): void {
+    this.isDefault = true;
+  }
+
+  unsetAsDefault(): void {
+    this.isDefault = false;
+  }
+
+  update(props: UpdateLanguageProps): void {
+    if (props.name !== undefined) {
+      this.name = props.name;
+    }
+    if (props.isActive !== undefined) this.isActive = props.isActive;
+    if (props.isDefault !== undefined) this.isDefault = props.isDefault;
+  }
+  //#endregion MUTATORS
 }

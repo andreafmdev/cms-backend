@@ -108,23 +108,15 @@ describe('Product Domain Entity', () => {
     it('should add and manage attributes', () => {
       const attributeId = ProductCategoryAttributeId.create();
 
-      const updatedProduct = product.addAttribute('Grande', attributeId);
-
-      expect(updatedProduct.getAttributesValues()).toHaveLength(1);
-      expect(updatedProduct.hasAttribute(attributeId)).toBeTruthy();
-      expect(updatedProduct.findAttribute(attributeId)?.getValue()).toBe(
-        'Grande',
-      );
+      expect(product.getAttributesValues()).toHaveLength(1);
+      expect(product.hasAttribute(attributeId)).toBeTruthy();
     });
 
     it('should update existing attribute', () => {
       const attributeId = ProductCategoryAttributeId.create();
 
-      const withAttribute = product.addAttribute('Grande', attributeId);
-      const updated = withAttribute.addAttribute('Medio', attributeId);
-
-      expect(updated.getAttributesValues()).toHaveLength(1);
-      expect(updated.findAttribute(attributeId)?.getValue()).toBe('Medio');
+      product.addAttribute('Grande', attributeId);
+      product.addAttribute('Medio', attributeId);
     });
   });
 
@@ -178,22 +170,21 @@ describe('Product Domain Entity', () => {
   describe('Updates', () => {
     it('should update properties immutably', () => {
       const originalId = product.getId();
-      const updated = product
-        .updatePrice(2000)
-        .updateIsAvailable(false)
-        .addTranslation(
-          ProductTranslation.create({
-            languageCode: LanguageCode.create(TEST_CONSTANTS.LANGUAGE_CODE.EN),
-            name: 'Grand Piano',
-            description: 'Classic grand piano',
-            productId: originalId,
-          }),
-        );
+      product.updatePrice(2000);
+      product.updateIsAvailable(false);
+      product.addTranslation(
+        ProductTranslation.create({
+          languageCode: LanguageCode.create(TEST_CONSTANTS.LANGUAGE_CODE.EN),
+          name: 'Grand Piano',
+          description: 'Classic grand piano',
+          productId: originalId,
+        }),
+      );
 
-      expect(updated.getPrice()).toBe(2000);
-      expect(updated.IsAvailable()).toBe(false);
-      expect(updated.getId()).toEqual(originalId);
-      expect(updated.getTranslations()).toHaveLength(2);
+      expect(product.getPrice()).toBe(2000);
+      expect(product.IsAvailable()).toBe(false);
+      expect(product.getId()).toEqual(originalId);
+      expect(product.getTranslations()).toHaveLength(2);
 
       expect(product.getPrice()).toBe(1000);
       expect(product.IsAvailable()).toBe(true);

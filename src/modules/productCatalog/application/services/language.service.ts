@@ -16,6 +16,9 @@ export class LanguageService {
   async findAllActiveLanguages(): Promise<Language[]> {
     return await this.languageRepository.findAllActiveLanguages();
   }
+  async findActiveLanguageByCode(code: LanguageCode): Promise<Language | null> {
+    return await this.languageRepository.findActiveLanguageByCode(code);
+  }
   async findDefaultLanguage(): Promise<Language | null> {
     return await this.languageRepository.findDefaultLanguage();
   }

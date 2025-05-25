@@ -56,6 +56,18 @@ export class CategoryService {
           `Language ${translationData.languageCode} is not active for category`,
         );
       }
+      //check if translation already exists
+      const existingTranslation =
+        await this.categoryRepository.findExistingCategoryTranslation(
+          translationData.name,
+          translationData.languageCode,
+          categoryId.getStringValue(),
+        );
+      if (existingTranslation) {
+        throw new ConflictException(
+          `Translation ${translationData.languageCode.toString().toUpperCase()} already exists for category`,
+        );
+      }
       const translation = CategoryTranslation.create({
         name: translationData.name,
         description: translationData.description,
@@ -191,12 +203,24 @@ export class CategoryService {
           `Language ${categoryTranslation.languageCode} is not active for category`,
         );
       }
+      //check if translation already exists
 
       const languageCode = LanguageCode.create(
         categoryTranslation.languageCode,
       );
-
+      const existingTranslation =
+        await this.categoryRepository.findExistingCategoryTranslation(
+          categoryTranslation.name,
+          categoryTranslation.languageCode,
+          category.getId().getStringValue(),
+        );
+      if (existingTranslation) {
+        throw new ConflictException(
+          `Translation ${categoryTranslation.languageCode.toString().toUpperCase()} already exists for category ${existingTranslation.getId().toString()} - ${existingTranslation.getName(languageCode)}`,
+        );
+      }
       const translation = category.getTranslation(languageCode);
+      //if translation does not exist, check if it already exists
       if (!translation) {
         const newTranslation = CategoryTranslation.create({
           name: categoryTranslation.name,

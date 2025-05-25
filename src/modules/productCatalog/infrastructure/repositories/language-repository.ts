@@ -43,4 +43,11 @@ export class LanguageRepository
     });
     return language;
   }
+  async findActiveLanguageByCode(code: LanguageCode): Promise<Language | null> {
+    const language = await super.findOneByCondition({
+      isActive: true,
+      code: code.getValue(),
+    });
+    return language;
+  }
 }

@@ -11,9 +11,6 @@ interface ProductCategoryAttributeProps {
   translations: ProductCategoryAttributeTranslation[];
 }
 
-type UpdateProductCategoryAttributeProps =
-  Partial<ProductCategoryAttributeProps>;
-
 type ReconstituteProps = ProductCategoryAttributeProps;
 //#endregion INTERFACES
 
@@ -142,22 +139,6 @@ export class ProductCategoryAttribute extends BaseDomainEntity<ProductCategoryAt
   //#endregion GETTERS
 
   //#region BUSINESS METHODS
-  /**
-   * Update the attribute
-   * @param props - The properties to update the attribute
-   * @param props.translations - The translations to update the attribute
-   * @param props.translations.languageCode - The language code of the translation to update
-   * @param props.translations.value - The value of the translation to update
-   * @returns The updated attribute
-   */
-  update(props: UpdateProductCategoryAttributeProps): ProductCategoryAttribute {
-    return new ProductCategoryAttribute(
-      props.translations ?? [...this.translations],
-      this.categoryId,
-      this.getId(),
-    );
-  }
-
   addTranslation(languageCode: LanguageCode, value: string): void {
     const translation = ProductCategoryAttributeTranslation.create({
       languageCode,
@@ -179,7 +160,7 @@ export class ProductCategoryAttribute extends BaseDomainEntity<ProductCategoryAt
       );
     }
 
-    this.translations[index] = this.translations[index].update({ value });
+    this.translations[index] = this.translations[index].updateValue(value);
   }
 
   removeTranslation(languageCode: LanguageCode): void {

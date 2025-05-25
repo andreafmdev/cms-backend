@@ -18,11 +18,15 @@ export class BrandService {
   async findBrandById(id: BrandId): Promise<Brand | null> {
     return await this.brandRepository.findBrandById(id);
   }
+
   async findAllBrands(): Promise<Brand[]> {
     return await this.brandRepository.findAllBrands();
   }
   async createBrand(name: string): Promise<Brand> {
     const brand = Brand.create({ name });
+    if (await this.brandRepository.findBrandByName(name)) {
+      throw new ConflictException('Brand name already exists');
+    }
     return await this.brandRepository.createBrand(brand);
   }
   async updateBrand(name: string, id: string): Promise<Brand> {
@@ -30,15 +34,8 @@ export class BrandService {
     if (!brand) {
       throw new NotFoundException('Brand not found');
     }
-    const productsCount = await this.productRepository.searchProductsCount({
-      brandId: id,
-    });
-    if (productsCount > 0) {
-      throw new ConflictException(
-        `Brand has ${productsCount} products, cannot be deleted`,
-      );
-    }
-    return await this.brandRepository.save(brand.update({ name }));
+    brand.updateName(name);
+    return await this.brandRepository.save(brand);
   }
   async deleteBrand(id: string): Promise<boolean> {
     const brand = await this.findBrandById(BrandId.create(id));

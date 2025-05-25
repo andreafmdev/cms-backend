@@ -25,8 +25,8 @@ interface ReconstituteProps {
 
 export class ProductImage extends BaseDomainEntity<ProductImageId> {
   //#region PROPERTIES
-  private readonly url: ImageUrl;
-  private readonly isMain: boolean;
+  private url: ImageUrl;
+  private isMain: boolean;
   //#endregion PROPERTIES
 
   //#region CONSTRUCTOR
@@ -76,21 +76,29 @@ export class ProductImage extends BaseDomainEntity<ProductImageId> {
 
   //#region BUSINESS METHODS
   update(props: UpdateProductImageProps): ProductImage {
-    const id = this.getId() ?? undefined;
-
-    return new ProductImage(
-      props.url ?? this.url,
-      props.isMain ?? this.isMain,
-      id,
-    );
+    ProductImage.validateInvariants({ url: props.url, isMain: props.isMain });
+    this.url = props.url ?? this.url;
+    this.isMain = props.isMain ?? this.isMain;
+    return this;
   }
 
-  updateUrl(url: string): ProductImage {
-    return this.update({ url: ImageUrl.create(url) });
+  updateUrl(url: string): void {
+    const newUrl = ImageUrl.create(url);
+    ProductImage.validateInvariants({ url: newUrl });
+    this.url = newUrl;
   }
 
-  updateIsMain(isMain: boolean): ProductImage {
-    return this.update({ isMain });
+  updateIsMain(isMain: boolean): void {
+    this.isMain = isMain;
+  }
+
+  setAsMain(): void {
+    this.isMain = true;
+  }
+
+  // ✅ NUOVO: Metodo per rimuovere come immagine principale
+  unsetAsMain(): void {
+    this.isMain = false;
   }
   //#endregion BUSINESS METHODS
 }

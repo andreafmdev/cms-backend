@@ -28,10 +28,8 @@ describe('Brand Domain Entity', () => {
   describe('Update', () => {
     it('should update the name of the brand', () => {
       const brand = builder.build();
-      const updatedBrand = brand.update({
-        name: 'New Brand Name',
-      });
-      expect(updatedBrand.getName()).toBe('New Brand Name');
+      brand.updateName('New Brand Name');
+      expect(brand.getName()).toBe('New Brand Name');
     });
     it('should throw an error when updating the name of the brand to an empty string', () => {
       const brand = builder.build();

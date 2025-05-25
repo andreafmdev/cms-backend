@@ -11,7 +11,7 @@ export class TestBrandBuilder {
   }
 
   withName(name: string): TestBrandBuilder {
-    this.brand = this.brand.updateName(name);
+    this.brand.updateName(name);
     return this;
   }
 

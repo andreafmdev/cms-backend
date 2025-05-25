@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from '@base/infrastructure/repositories/base.repository';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BrandOrmEntity } from '../entities/brand.orm-entity';
 import { BrandId } from '@module/productCatalog/domain/value-objects/brand-id';
@@ -41,5 +41,11 @@ export class BrandRepository
   async createBrand(brand: Brand): Promise<Brand> {
     const createdBrand = await super.save(brand);
     return createdBrand;
+  }
+  async findBrandByName(name: string): Promise<Brand | null> {
+    const brand = await super.findOneByCondition({
+      name: ILike(name),
+    });
+    return brand;
   }
 }

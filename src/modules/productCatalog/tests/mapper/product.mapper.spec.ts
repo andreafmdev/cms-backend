@@ -270,16 +270,14 @@ describe('ProductMapper', () => {
       const product = productDomainEntity;
 
       // Act
-      const updatedProduct = product.update({
-        price: 200,
-        isAvailable: false,
-      });
+      product.updatePrice(200);
+      product.updateIsAvailable(false);
 
       // Assert
-      expect(updatedProduct.getPrice()).toBe(200);
-      expect(updatedProduct.IsAvailable()).toBe(false);
-      expect(updatedProduct.getId()).toBe(existingId); // Verifica che l'ID sia mantenuto / Verify ID is maintained
-      expect(updatedProduct).not.toBe(product); // Verifica immutabilità / Verify immutability
+      expect(product.getPrice()).toBe(200);
+      expect(product.IsAvailable()).toBe(false);
+      expect(product.getId()).toBe(existingId); // Verifica che l'ID sia mantenuto / Verify ID is maintained
+      expect(product).not.toBe(product); // Verifica immutabilità / Verify immutability
     });
 
     it('should maintain all unchanged properties', () => {
@@ -288,15 +286,14 @@ describe('ProductMapper', () => {
       const originalBrand = originalProduct.getBrandId();
 
       // Act
-      const updatedProduct = originalProduct.updatePrice(200);
 
       // Assert
-      expect(updatedProduct.getPrice()).toBe(200);
-      expect(updatedProduct.getBrandId()).toEqual(originalBrand);
-      expect(updatedProduct.getCategoryId()).toEqual(
+      expect(originalProduct.getPrice()).toBe(200);
+      expect(originalProduct.getBrandId()).toEqual(originalBrand);
+      expect(originalProduct.getCategoryId()).toEqual(
         originalProduct.getCategoryId(),
       );
-      expect(updatedProduct.getTranslations()).toEqual(
+      expect(originalProduct.getTranslations()).toEqual(
         originalProduct.getTranslations(),
       );
     });
@@ -305,8 +302,8 @@ describe('ProductMapper', () => {
   describe('withPrice', () => {
     it('should update the product with a new price', () => {
       const product = productDomainEntity;
-      const updatedProduct = product.updatePrice(200);
-      expect(updatedProduct.getPrice()).toBe(200);
+      product.updatePrice(200);
+      expect(product.getPrice()).toBe(200);
     });
   });
 });
