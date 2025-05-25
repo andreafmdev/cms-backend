@@ -22,6 +22,7 @@ import {
 } from '../types/category.types';
 import { LanguageService } from '@module/productCatalog/application/services/language.service';
 import { ProductService } from './product.service';
+import { Language } from '@module/productCatalog/domain/entities/language';
 @Injectable()
 export class CategoryService {
   constructor(
@@ -41,20 +42,18 @@ export class CategoryService {
     attributeTranslations: AttributeInput[];
   }): Promise<Category> {
     //create category id
-    const activeLanguages = await this.languageService.findAllActiveLanguages();
     const categoryId = CategoryId.create();
     //create category translation entities
     const translationEntities: CategoryTranslation[] = [];
+    const activeLanguages = await this.languageService.findAllActiveLanguages();
 
     for (const translationData of props.translations) {
+      //check if language is active for category
       if (
-        !activeLanguages.some(
-          (language) =>
-            language.getCode().getValue() === translationData.languageCode,
-        )
+        !this.getActiveLanguage(activeLanguages, translationData.languageCode)
       ) {
         throw new ConflictException(
-          `Language ${translationData.languageCode} is not active`,
+          `Language ${translationData.languageCode} is not active for category`,
         );
       }
       const translation = CategoryTranslation.create({
@@ -73,6 +72,13 @@ export class CategoryService {
         [];
 
       for (const translationData of attributeData.translations) {
+        if (
+          !this.getActiveLanguage(activeLanguages, translationData.languageCode)
+        ) {
+          throw new ConflictException(
+            `Language ${translationData.languageCode} is not active for attribute`,
+          );
+        }
         //todo: check if attribute translation already exists globally??
         const attributeTranslation = ProductCategoryAttributeTranslation.create(
           {
@@ -158,5 +164,141 @@ export class CategoryService {
     await this.categoryRepository.remove(category);
     const deletedCategory = await this.findCategoryById(id);
     return deletedCategory === null;
+  }
+  async updateCategory(
+    id: CategoryId,
+    props: {
+      categoryTranslations: CategoryTranslationInput[];
+      attributes: AttributeInput[];
+    },
+  ): Promise<Category> {
+    const category = await this.findCategoryById(id);
+    const activeLanguages = await this.languageService.findAllActiveLanguages();
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    // Update translations
+    for (const categoryTranslation of props.categoryTranslations) {
+      if (
+        !this.getActiveLanguage(
+          activeLanguages,
+          categoryTranslation.languageCode,
+        )
+      ) {
+        throw new ConflictException(
+          `Language ${categoryTranslation.languageCode} is not active for category`,
+        );
+      }
+
+      const languageCode = LanguageCode.create(
+        categoryTranslation.languageCode,
+      );
+
+      const translation = category.getTranslation(languageCode);
+      if (!translation) {
+        const newTranslation = CategoryTranslation.create({
+          name: categoryTranslation.name,
+          description: categoryTranslation.description,
+          languageCode: languageCode,
+          categoryId: category.getId(),
+        });
+        category.addTranslation(newTranslation);
+      } else {
+        category.updateTranslation(
+          languageCode,
+          categoryTranslation.name,
+          categoryTranslation.description,
+        );
+      }
+    }
+
+    // Update attributes
+    for (const attribute of props.attributes) {
+      if (!attribute.id) {
+        // Create new attribute
+        const newAttributeId = ProductCategoryAttributeId.create();
+        const newAttributeTranslations: ProductCategoryAttributeTranslation[] =
+          [];
+
+        for (const attributeTranslation of attribute.translations) {
+          if (
+            !this.getActiveLanguage(
+              activeLanguages,
+              attributeTranslation.languageCode,
+            )
+          ) {
+            throw new ConflictException(
+              `Language ${attributeTranslation.languageCode} is not active for attribute`,
+            );
+          }
+
+          const languageCode = LanguageCode.create(
+            attributeTranslation.languageCode,
+          );
+          newAttributeTranslations.push(
+            ProductCategoryAttributeTranslation.create({
+              value: attributeTranslation.name,
+              languageCode: languageCode,
+              attributeId: newAttributeId,
+            }),
+          );
+        }
+
+        category.addAttribute(
+          ProductCategoryAttribute.create({
+            translations: newAttributeTranslations,
+            categoryId: category.getId(),
+          }),
+        );
+      } else {
+        // Update existing attribute
+        const existingAttribute = category.findAttributeById(
+          ProductCategoryAttributeId.create(attribute.id),
+        );
+        if (existingAttribute) {
+          for (const attributeTranslation of attribute.translations) {
+            if (
+              !this.getActiveLanguage(
+                activeLanguages,
+                attributeTranslation.languageCode,
+              )
+            ) {
+              throw new ConflictException(
+                `Language ${attributeTranslation.languageCode} is not active for attribute`,
+              );
+            }
+
+            const languageCode = LanguageCode.create(
+              attributeTranslation.languageCode,
+            );
+            if (existingAttribute.hasTranslation(languageCode)) {
+              category.updateAttributeTranslation(
+                existingAttribute.getId(),
+                languageCode,
+                attributeTranslation.name,
+              );
+            } else {
+              category.addAttributeTranslation(
+                existingAttribute.getId(),
+                languageCode,
+                attributeTranslation.name,
+              );
+            }
+          }
+        }
+      }
+    }
+
+    return await this.categoryRepository.save(category);
+  }
+  private getActiveLanguage(
+    languages: Language[],
+    languageCode: string,
+  ): boolean {
+    return languages.some(
+      (language) => language.getCode().getValue() === languageCode,
+    );
   }
 }

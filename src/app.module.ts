@@ -8,13 +8,13 @@ import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { LoggerModule } from 'nestjs-pino';
 //import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { APP_FILTER } from '@nestjs/core';
-import { GlobalExceptionsFilter } from '@shared/filters/global-exception.filter';
+import { GlobalExceptionFilter } from '@shared/filters/global-exception.filter';
 import { AuthModule } from '@module/auth/auth.module';
 import { ProductModule } from '@module/productCatalog/product.module';
 
 const GlobalFilterProvider = {
   provide: APP_FILTER,
-  useClass: GlobalExceptionsFilter,
+  useClass: GlobalExceptionFilter,
 };
 @Module({
   imports: [

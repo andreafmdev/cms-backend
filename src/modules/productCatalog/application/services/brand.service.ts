@@ -1,11 +1,19 @@
 import { Brand } from '@module/productCatalog/domain/aggregates/brand';
 import { BrandId } from '@module/productCatalog/domain/value-objects/brand-id';
 import { BrandRepository } from '@module/productCatalog/infrastructure/repositories/brand-repository';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ProductRepository } from '@module/productCatalog/infrastructure/repositories/product-repository';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 @Injectable()
 export class BrandService {
-  constructor(private readonly brandRepository: BrandRepository) {}
+  constructor(
+    private readonly brandRepository: BrandRepository,
+    private readonly productRepository: ProductRepository,
+  ) {}
 
   async findBrandById(id: BrandId): Promise<Brand | null> {
     return await this.brandRepository.findBrandById(id);
@@ -22,17 +30,33 @@ export class BrandService {
     if (!brand) {
       throw new NotFoundException('Brand not found');
     }
-
+    const productsCount = await this.productRepository.searchProductsCount({
+      brandId: id,
+    });
+    if (productsCount > 0) {
+      throw new ConflictException(
+        `Brand has ${productsCount} products, cannot be deleted`,
+      );
+    }
     return await this.brandRepository.save(brand.update({ name }));
   }
-  /*async deleteBrand(id: string): Promise<void> {
+  async deleteBrand(id: string): Promise<boolean> {
     const brand = await this.findBrandById(BrandId.create(id));
     if (!brand) {
       throw new NotFoundException('Brand not found');
     }
-    //todo verificare se il brand è associato a dei prodotti
+    const productsCount = await this.productRepository.searchProductsCount({
+      brandId: id,
+    });
+    if (productsCount > 0) {
+      throw new ConflictException(
+        `Brand has ${productsCount} products, cannot be deleted`,
+      );
+    }
     await this.brandRepository.remove(brand);
-  }*/
+    const deletedBrand = await this.findBrandById(BrandId.create(id));
+    return !deletedBrand;
+  }
   async searchBrands(filters: {
     name?: string;
     page?: number;

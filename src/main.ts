@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import {
   FastifyAdapter,
@@ -10,6 +10,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 //import { LoggerMiddleware } from '@shared/middleware/logger.middleware';
 import { Logger } from 'nestjs-pino';
 import { ValidationPipe } from '@nestjs/common';
+import { GlobalExceptionFilter } from '@shared/filters/global-exception.filter';
 
 async function bootstrap() {
   //  Use FastifyAdapter
@@ -54,13 +55,8 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
-  /* app
-    .getHttpAdapter()
-    .getInstance()
-    .addHook('onRequest', async (req, res) => {
-      const logger = new LoggerMiddleware();
-      logger.use(req, res, () => {});
-    })*/
+  const httpAdapterHost = app.get(HttpAdapterHost); // ✅ Aggiungi questa riga
+  app.useGlobalFilters(new GlobalExceptionFilter(httpAdapterHost)); // ✅ Aggiungi questa riga
 
   //#region swagger
   const config = new DocumentBuilder()

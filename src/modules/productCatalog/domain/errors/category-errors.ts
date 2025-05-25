@@ -12,6 +12,10 @@ export class CategoryDomainError extends DomainError {
       'ATTRIBUTE_BELONGS_TO_ANOTHER_CATEGORY',
     MISSING_ATTRIBUTE_ID: 'MISSING_ATTRIBUTE_ID',
     MISSING_CATEGORY_ID: 'MISSING_CATEGORY_ID',
+    ATTRIBUTE_TRANSLATION_NOT_FOUND: 'ATTRIBUTE_TRANSLATION_NOT_FOUND',
+    ATTRIBUTE_NOT_FOUND: 'ATTRIBUTE_NOT_FOUND',
+    ATTRIBUTE_TRANSLATION_ALREADY_EXISTS:
+      'ATTRIBUTE_TRANSLATION_ALREADY_EXISTS',
   } as const;
   constructor(
     message: string,
@@ -74,6 +78,30 @@ export class CategoryDomainError extends DomainError {
     return new CategoryDomainError(
       'Category ID is required',
       CategoryDomainError.ERRORS.MISSING_CATEGORY_ID,
+    );
+  }
+  static attributeNotFound(attributeId: string): CategoryDomainError {
+    return new CategoryDomainError(
+      `Attribute with id ${attributeId} not found`,
+      CategoryDomainError.ERRORS.ATTRIBUTE_NOT_FOUND,
+    );
+  }
+  static attributeTranslationNotFound(
+    attributeId: string,
+    languageCode: string,
+  ): CategoryDomainError {
+    return new CategoryDomainError(
+      `Translation for attribute with id ${attributeId} and language code ${languageCode} not found`,
+      CategoryDomainError.ERRORS.ATTRIBUTE_TRANSLATION_NOT_FOUND,
+    );
+  }
+  static attributeTranslationAlreadyExists(
+    attributeId: string,
+    languageCode: string,
+  ): CategoryDomainError {
+    return new CategoryDomainError(
+      `Translation for attribute with id ${attributeId} and language code ${languageCode} already exists`,
+      CategoryDomainError.ERRORS.ATTRIBUTE_TRANSLATION_ALREADY_EXISTS,
     );
   }
 }

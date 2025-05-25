@@ -19,7 +19,7 @@ type ReconstituteProps = ProductCategoryAttributeProps;
 
 export class ProductCategoryAttribute extends BaseDomainEntity<ProductCategoryAttributeId> {
   //#region PROPERTIES
-  private readonly translations: ProductCategoryAttributeTranslation[];
+  private translations: ProductCategoryAttributeTranslation[];
   private readonly categoryId: CategoryId;
   //#endregion PROPERTIES
 
@@ -96,6 +96,16 @@ export class ProductCategoryAttribute extends BaseDomainEntity<ProductCategoryAt
       languageCodes.add(code);
     });
   }
+
+  private validateTranslationInvariant(
+    translation: ProductCategoryAttributeTranslation,
+  ): void {
+    if (this.hasTranslation(translation.getLanguageCode())) {
+      throw ProductCategoryAttributeDomainError.duplicatedTranslations(
+        translation.getLanguageCode().getValue(),
+      );
+    }
+  }
   //#endregion VALIDATION
 
   //#region GETTERS
@@ -132,6 +142,14 @@ export class ProductCategoryAttribute extends BaseDomainEntity<ProductCategoryAt
   //#endregion GETTERS
 
   //#region BUSINESS METHODS
+  /**
+   * Update the attribute
+   * @param props - The properties to update the attribute
+   * @param props.translations - The translations to update the attribute
+   * @param props.translations.languageCode - The language code of the translation to update
+   * @param props.translations.value - The value of the translation to update
+   * @returns The updated attribute
+   */
   update(props: UpdateProductCategoryAttributeProps): ProductCategoryAttribute {
     return new ProductCategoryAttribute(
       props.translations ?? [...this.translations],
@@ -140,30 +158,45 @@ export class ProductCategoryAttribute extends BaseDomainEntity<ProductCategoryAt
     );
   }
 
-  addTranslation(
-    languageCode: LanguageCode,
-    value: string,
-  ): ProductCategoryAttribute {
-    const currentTranslations = this.getTranslations();
+  addTranslation(languageCode: LanguageCode, value: string): void {
     const translation = ProductCategoryAttributeTranslation.create({
       languageCode,
       value,
       attributeId: this.getId(),
     });
-    return this.update({
-      translations: [...currentTranslations, translation],
-    });
+    this.validateTranslationInvariant(translation);
+    this.translations.push(translation);
   }
 
-  removeTranslation(
-    translation: ProductCategoryAttributeTranslation,
-  ): ProductCategoryAttribute {
-    const filteredTranslations = this.translations.filter(
-      (t) => !t.equals(translation),
+  updateTranslation(languageCode: LanguageCode, value: string): void {
+    const index = this.translations.findIndex((t) =>
+      t.getLanguageCode().equals(languageCode),
     );
-    return this.update({
-      translations: filteredTranslations,
-    });
+
+    if (index === -1) {
+      throw ProductCategoryAttributeDomainError.translationNotFound(
+        languageCode.getValue(),
+      );
+    }
+
+    this.translations[index] = this.translations[index].update({ value });
+  }
+
+  removeTranslation(languageCode: LanguageCode): void {
+    const index = this.translations.findIndex((t) =>
+      t.getLanguageCode().equals(languageCode),
+    );
+    if (index !== -1) {
+      this.translations.splice(index, 1);
+    }
+  }
+
+  replaceTranslations(
+    translations: ProductCategoryAttributeTranslation[],
+  ): void {
+    ProductCategoryAttribute.validateInvariants({ translations });
+    this.translations.length = 0;
+    this.translations.push(...translations);
   }
   //#endregion BUSINESS METHODS
 }

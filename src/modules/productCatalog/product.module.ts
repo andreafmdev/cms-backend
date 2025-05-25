@@ -54,6 +54,9 @@ import { CreateBrandCommandHandler } from './application/commands/create-brand/c
 import { UpdateBrandCommandHandler } from './application/commands/update-brand/update-brand.handler';
 import { CreateCategoryHandler } from './application/commands/create-category/create-category.handler';
 import { DeleteCategoryHandler } from './application/commands/delete-category/delete-category.handler';
+import { UpdateCategoryHandler } from './application/commands/update-category/update-category.handler';
+import { DeleteBrandHandler } from './application/commands/delete-brand/delete-brand.handler';
+
 const mappers = [
   ProductMapper,
   ProductTranslationMapper,
@@ -97,7 +100,7 @@ const controllers = [
   BrandController,
   LanguageController,
 ];
-const queryHandlers = [
+const handlers = [
   GetProductsHandler,
   SearchProductsHandler,
   CreateProductHandler,
@@ -115,6 +118,8 @@ const queryHandlers = [
   UpdateBrandCommandHandler,
   CreateCategoryHandler,
   DeleteCategoryHandler,
+  UpdateCategoryHandler,
+  DeleteBrandHandler,
 ];
 @Module({
   imports: [
@@ -128,7 +133,7 @@ const queryHandlers = [
     ...services,
     ...mappers,
     ...seeders,
-    ...queryHandlers,
+    ...handlers,
   ],
   controllers: [...controllers],
   exports: [ProductCatalogSeeder],

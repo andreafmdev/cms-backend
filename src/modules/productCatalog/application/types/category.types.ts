@@ -7,13 +7,14 @@ export interface CategoryTranslationInput {
   languageCode: string;
 }
 
-export interface AttributeTranslationInput {
+export interface AttributeTranslation {
   name: string;
   languageCode: string;
 }
 
 export interface AttributeInput {
-  translations: AttributeTranslationInput[];
+  translations: AttributeTranslation[];
+  id?: string;
 }
 export interface CategoryTreeFilter
   extends FindOptionsWhere<CategoryOrmEntity> {

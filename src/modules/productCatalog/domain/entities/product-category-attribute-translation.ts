@@ -160,8 +160,27 @@ export class ProductCategoryAttributeTranslation {
   ): ProductCategoryAttributeTranslation {
     return this.update({ languageCode });
   }
+  /**
+   * Check if the translation is equal to another translation
+   * @param other - The other translation to compare to
+   * @returns True if the translation is equal to the other translation, false otherwise
+   */
   equals(other: ProductCategoryAttributeTranslation): boolean {
     return this.languageCode.equals(other.languageCode);
   }
+
+  addTranslation(
+    languageCode: LanguageCode,
+    value: string,
+  ): ProductCategoryAttributeTranslation {
+    return this.update({ languageCode, value });
+  }
+
+  removeTranslation(
+    languageCode: LanguageCode,
+  ): ProductCategoryAttributeTranslation {
+    return this.update({ languageCode: languageCode });
+  }
+
   //#endregion BUSINESS METHODS
 }

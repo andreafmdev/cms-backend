@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -34,6 +35,9 @@ import { CreateCategoryResponseDto } from './application/commands/create-categor
 import { CreateCategoryCommand } from './application/commands/create-category/create-category.command';
 import { DeleteCategoryResponse } from './application/commands/delete-category/delete-category.response';
 import { DeleteCategoryCommand } from './application/commands/delete-category/delete-category.command';
+import { UpdateCategoryCommand } from './application/commands/update-category/update-category.command';
+import { UpdateCategoryRequestDto } from './application/commands/update-category/update-category.request';
+import { UpdateCategoryResponseDto } from './application/commands/update-category/update-category.response';
 @Controller('categories')
 export class CategoryController {
   constructor(
@@ -121,6 +125,19 @@ export class CategoryController {
   ): Promise<CreateCategoryResponseDto> {
     return this.commandBus.execute(
       new CreateCategoryCommand(request.translations, request.attributes),
+    );
+  }
+  //update category
+  @Patch(':id')
+  @RequireGroup('ADMIN')
+  @ApiOperation({ summary: 'Update category' })
+  @ApiBearerAuth()
+  updateCategory(
+    @Param('id') id: string,
+    @Body() request: UpdateCategoryRequestDto,
+  ): Promise<UpdateCategoryResponseDto> {
+    return this.commandBus.execute(
+      new UpdateCategoryCommand(request.translations, request.attributes, id),
     );
   }
   //delete category

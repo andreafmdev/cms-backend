@@ -105,10 +105,10 @@ describe('Category Domain Entity', () => {
         categoryId: category.getId(),
       });
 
-      const updatedCategory = category.addAttribute(attribute);
+      category.addAttribute(attribute);
 
-      expect(updatedCategory.getAttributes()).toHaveLength(1);
-      expect(updatedCategory.hasAttribute(attribute)).toBeTruthy();
+      expect(category.getAttributes()).toHaveLength(1);
+      expect(category.hasAttribute(attribute)).toBeTruthy();
     });
     it('should throw error when adding an attribute to another category', () => {
       const attributeId = ProductCategoryAttributeId.create();
@@ -156,8 +156,8 @@ describe('Category Domain Entity', () => {
         categoryId: category.getId(),
       });
 
-      const updatedCategory = category.addAttribute(multilingualAttribute);
-      const attribute = updatedCategory.getAttributes()[0];
+      category.addAttribute(multilingualAttribute);
+      const attribute = category.getAttributes()[0];
 
       expect(attribute.getTranslations()).toHaveLength(2);
       expect(
@@ -190,11 +190,11 @@ describe('Category Domain Entity', () => {
         categoryId: categoryId,
       });
 
-      const withAttribute = category.addAttribute(attribute);
-      const afterRemoval = withAttribute.removeAttribute(attribute);
+      category.addAttribute(attribute);
+      category.removeAttribute(attribute);
 
-      expect(afterRemoval.getAttributes()).toHaveLength(0);
-      expect(afterRemoval.hasAttribute(attribute)).toBeFalsy();
+      expect(category.getAttributes()).toHaveLength(0);
+      expect(category.hasAttribute(attribute)).toBeFalsy();
     });
   });
 
@@ -243,11 +243,9 @@ describe('Category Domain Entity', () => {
         categoryId: CategoryId.create(),
       });
 
-      const updatedCategory = category.addTranslation(newTranslation);
+      category.addTranslation(newTranslation);
 
-      expect(updatedCategory).not.toBe(category);
-      expect(category.getTranslations()).toHaveLength(1);
-      expect(updatedCategory.getTranslations()).toHaveLength(2);
+      expect(category.getTranslations()).toHaveLength(2);
     });
   });
 });

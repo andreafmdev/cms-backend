@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -37,6 +38,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateBrandResponseDto } from './application/commands/create-brand/create-brand.response';
 import { CreateBrandCommand } from './application/commands/create-brand/create-brand.command';
 import { CreateBrandRequestDto } from './application/commands/create-brand/create-brand.request';
+import { DeleteBrandResponse } from './application/commands/delete-brand/delete-brand.response';
+import { DeleteBrandCommand } from './application/commands/delete-brand/delete-brand.command';
 @ApiTags('Brands')
 @Controller('brands')
 export class BrandController {
@@ -132,6 +135,15 @@ export class BrandController {
     @Body() request: UpdateBrandRequestDto,
   ): Promise<UpdateBrandResponseDto> {
     const command = new UpdateBrandCommand(request.name, id);
+    return await this.commandBus.execute(command);
+  }
+  //delete brand
+  @Delete(':id')
+  @RequireGroup('ADMIN')
+  @ApiOperation({ summary: 'Delete a brand' })
+  @ApiBearerAuth()
+  async deleteBrand(@Param('id') id: string): Promise<DeleteBrandResponse> {
+    const command = new DeleteBrandCommand(id);
     return await this.commandBus.execute(command);
   }
 }

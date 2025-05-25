@@ -17,16 +17,12 @@ export type CreateCategoryTranslationProps = CategoryTranslationProps;
  * Reconstitute category translation properties
  */
 type ReconstituteProps = CategoryTranslationProps;
-/**
- * Update category translation properties
- */
-type UpdateCategoryTranslationProps = Partial<CategoryTranslationProps>;
 
 //#endregion INTERFACES
 export class CategoryTranslation {
   //#region PROPERTIES
-  private readonly name: string;
-  private readonly description: string;
+  private name: string;
+  private description: string;
   private readonly languageCode: LanguageCode;
   private readonly categoryId: CategoryId;
   //#endregion PROPERTIES
@@ -97,41 +93,41 @@ export class CategoryTranslation {
       throw CategoryTranslationDomainError.missingLanguageCode();
     }
   }
+
+  private validateName(name: string): void {
+    if (BaseDomainEntity.isNullOrUndefined(name) || name.trim() === '') {
+      throw CategoryTranslationDomainError.missingName();
+    }
+  }
   //#endregion VALIDATION
 
   //#region BUSINESS LOGIC
   /**
-   * Update the category translation
-   * @param props - The properties of the category translation
-   * @param props.name - The name of the category translation
-   * @param props.description - The description of the category translation
-   * @param props.languageCode - The language code of the category translation
-   * @param props.categoryId - The category id of the category translation
-   * @returns The updated category translation
+   * Update the translation content
+   * @param name - The new name
+   * @param description - The new description
    */
-  update(props: UpdateCategoryTranslationProps): CategoryTranslation {
-    return new CategoryTranslation(
-      props.name ?? this.name,
-      props.description ?? this.description,
-      props.languageCode ?? this.languageCode,
-      props.categoryId ?? this.categoryId,
-    );
+  update(props: { name: string; description: string }): void {
+    this.validateName(props.name);
+    this.name = props.name;
+    this.description = props.description;
   }
+
   /**
    * Update the name of the category translation
-   * @param name - The name of the category translation
-   * @returns The updated category translation
+   * @param name - The new name
    */
-  updateName(name: string): CategoryTranslation {
-    return this.update({ name });
+  updateName(name: string): void {
+    this.validateName(name);
+    this.name = name;
   }
+
   /**
-   * Update the language code of the category translation
-   * @param languageCode - The language code of the category translation
-   * @returns The updated category translation
+   * Update the description of the category translation
+   * @param description - The new description
    */
-  updateLanguageCode(languageCode: LanguageCode): CategoryTranslation {
-    return this.update({ languageCode });
+  updateDescription(description: string): void {
+    this.description = description;
   }
 
   //#endregion BUSINESS LOGIC

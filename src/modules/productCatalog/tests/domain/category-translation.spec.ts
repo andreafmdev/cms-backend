@@ -41,16 +41,14 @@ describe('CategoryTranslation', () => {
         languageCode: LanguageCode.create(TEST_CONSTANTS.LANGUAGE_CODE.IT),
         categoryId: CategoryId.create(),
       });
-      const updatedCategoryTranslation = categoryTranslation.update({
+      categoryTranslation.update({
         name: 'Updated Test',
         description: 'Updated Test',
-        languageCode: LanguageCode.create(TEST_CONSTANTS.LANGUAGE_CODE.IT),
-        categoryId: CategoryId.create(),
       });
-      expect(updatedCategoryTranslation).toBeDefined();
-      expect(updatedCategoryTranslation.getName()).toBe('Updated Test');
-      expect(updatedCategoryTranslation.getDescription()).toBe('Updated Test');
-      expect(updatedCategoryTranslation.getLanguageCode()).toStrictEqual(
+      expect(categoryTranslation).toBeDefined();
+      expect(categoryTranslation.getName()).toBe('Updated Test');
+      expect(categoryTranslation.getDescription()).toBe('Updated Test');
+      expect(categoryTranslation.getLanguageCode()).toStrictEqual(
         LanguageCode.create(TEST_CONSTANTS.LANGUAGE_CODE.IT),
       );
     });
