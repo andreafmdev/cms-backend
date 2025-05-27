@@ -56,6 +56,7 @@ import { CreateCategoryHandler } from './application/commands/create-category/cr
 import { DeleteCategoryHandler } from './application/commands/delete-category/delete-category.handler';
 import { UpdateCategoryHandler } from './application/commands/update-category/update-category.handler';
 import { DeleteBrandHandler } from './application/commands/delete-brand/delete-brand.handler';
+import { GetCategoryAttributesHandler } from './application/queries/get-category-attributes/get-category-attributes.handler';
 
 const mappers = [
   ProductMapper,
@@ -120,6 +121,7 @@ const handlers = [
   DeleteCategoryHandler,
   UpdateCategoryHandler,
   DeleteBrandHandler,
+  GetCategoryAttributesHandler,
 ];
 @Module({
   imports: [

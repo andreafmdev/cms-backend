@@ -38,6 +38,9 @@ import { DeleteCategoryCommand } from './application/commands/delete-category/de
 import { UpdateCategoryCommand } from './application/commands/update-category/update-category.command';
 import { UpdateCategoryRequestDto } from './application/commands/update-category/update-category.request';
 import { UpdateCategoryResponseDto } from './application/commands/update-category/update-category.response';
+import { GetCategoryAttributeResponse } from './application/queries/get-category-attributes/get-category-attribute.response';
+import { GetCategoryAttributesQuery } from './application/queries/get-category-attributes/get-category-attributes.query';
+import { GetCategoryAttributesRequestDto } from './application/queries/get-category-attributes/get-category-attribute.request';
 @Controller('categories')
 export class CategoryController {
   constructor(
@@ -100,7 +103,7 @@ export class CategoryController {
     return this.queryBus.execute(new SearchCategoriesQuery(request));
   }
   //detail category
-  @Get('detail')
+  @Get(':id')
   @RequireGroup('ADMIN')
   @ApiOperation({ summary: 'Get category by id' })
   @ApiResponse({
@@ -109,10 +112,11 @@ export class CategoryController {
   })
   @ApiBearerAuth()
   getCategoryDetail(
+    @Param('id') id: string,
     @Query() request: GetCategoryDetailRequestDto,
   ): Promise<GetCategoryDetailResponseDto> {
     return this.queryBus.execute(
-      new GetCategoryDetailQuery(request.id, request.languageCode),
+      new GetCategoryDetailQuery(id, request.languageCode),
     );
   }
   //create category
@@ -147,5 +151,19 @@ export class CategoryController {
   @ApiBearerAuth()
   deleteCategory(@Param('id') id: string): Promise<DeleteCategoryResponse> {
     return this.commandBus.execute(new DeleteCategoryCommand(id));
+  }
+  //get category attributes
+  @Get(':id/attributes')
+  @RequireGroup('ADMIN')
+  @ApiOperation({ summary: 'Get category attributes' })
+  @ApiBearerAuth()
+  @ApiQuery({ type: GetCategoryAttributesRequestDto })
+  getCategoryAttributes(
+    @Param('id') id: string,
+    @Query() request: GetCategoryAttributesRequestDto,
+  ): Promise<GetCategoryAttributeResponse[]> {
+    return this.queryBus.execute(
+      new GetCategoryAttributesQuery(id, request.languageCode),
+    );
   }
 }

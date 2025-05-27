@@ -42,9 +42,27 @@ export class BrandRepository
     const createdBrand = await super.save(brand);
     return createdBrand;
   }
+  /**
+   * Find a brand by its name
+   * @param name - The name of the brand to find
+   * @returns The brand domain entity if found, otherwise null (Brand | null)
+   */
+  async findBrandsByName(name: string): Promise<Brand[]> {
+    const brands = await super.findAllByCondition({
+      filters: {
+        name: ILike(`%${name}%`),
+      },
+    });
+    return brands;
+  }
+  /**
+   * Find a brand by its name
+   * @param name - The name of the brand to find
+   * @returns The brand domain entity if found, otherwise null (Brand | null)
+   */
   async findBrandByName(name: string): Promise<Brand | null> {
     const brand = await super.findOneByCondition({
-      name: ILike(name),
+      name: ILike(`${name}`),
     });
     return brand;
   }

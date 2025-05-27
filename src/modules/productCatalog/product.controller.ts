@@ -33,8 +33,8 @@ import {
   MemoryStorageFile,
   UploadedFiles,
 } from '@x6tech/nest-file-fastify';
-import { RawCreateProductRequest } from './application/commands/create-product/raw-create-product.command';
 import { ProductTranslationDto } from './application/dto/product-translation.dto';
+import { CreateProductFormRequest } from './application/commands/create-product/create-product-form.request';
 
 @ApiTags('Products')
 @Controller('products')
@@ -101,7 +101,7 @@ export class ProductController {
     ]),
   )
   async createProduct(
-    @Body() request: RawCreateProductRequest,
+    @Body() request: CreateProductFormRequest,
     @UploadedFiles() files: { images?: MemoryStorageFile[] },
   ): Promise<CreateProductResponseDto> {
     const command = new CreateProductCommand(
