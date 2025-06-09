@@ -26,8 +26,9 @@ export class CreateProductHandler
       isFeatured,
       translations,
       image,
+      attributes,
     } = command;
-
+    console.log(attributes);
     const imageUrls: { url: string; publicId: string }[] = await Promise.all(
       image.map((file) =>
         this.uploadService.uploadImageBuffer(
@@ -44,6 +45,7 @@ export class CreateProductHandler
       categoryId,
       isAvailable,
       isFeatured,
+      attributes,
     });
 
     productResponse.id = product.getId().toString();

@@ -78,34 +78,38 @@ export class CategoryService {
     }
     //create attribute
     const attributeEntities: ProductCategoryAttribute[] = [];
-    for (const attributeData of props.attributeTranslations) {
-      const attributeId = ProductCategoryAttributeId.create();
-      const attributeTranslationEntities: ProductCategoryAttributeTranslation[] =
-        [];
+    if (props.attributeTranslations) {
+      for (const attributeData of props.attributeTranslations) {
+        const attributeId = ProductCategoryAttributeId.create();
+        const attributeTranslationEntities: ProductCategoryAttributeTranslation[] =
+          [];
 
-      for (const translationData of attributeData.translations) {
-        if (
-          !this.getActiveLanguage(activeLanguages, translationData.languageCode)
-        ) {
-          throw new ConflictException(
-            `Language ${translationData.languageCode} is not active for attribute`,
-          );
+        for (const translationData of attributeData.translations) {
+          if (
+            !this.getActiveLanguage(
+              activeLanguages,
+              translationData.languageCode,
+            )
+          ) {
+            throw new ConflictException(
+              `Language ${translationData.languageCode} is not active for attribute`,
+            );
+          }
+          //todo: check if attribute translation already exists globally??
+          const attributeTranslation =
+            ProductCategoryAttributeTranslation.create({
+              value: translationData.name,
+              languageCode: LanguageCode.create(translationData.languageCode),
+              attributeId: attributeId,
+            });
+          attributeTranslationEntities.push(attributeTranslation);
         }
-        //todo: check if attribute translation already exists globally??
-        const attributeTranslation = ProductCategoryAttributeTranslation.create(
-          {
-            value: translationData.name,
-            languageCode: LanguageCode.create(translationData.languageCode),
-            attributeId: attributeId,
-          },
-        );
-        attributeTranslationEntities.push(attributeTranslation);
+        const attribute = ProductCategoryAttribute.create({
+          translations: attributeTranslationEntities,
+          categoryId: categoryId,
+        });
+        attributeEntities.push(attribute);
       }
-      const attribute = ProductCategoryAttribute.create({
-        translations: attributeTranslationEntities,
-        categoryId: categoryId,
-      });
-      attributeEntities.push(attribute);
     }
     const category = Category.create({
       id: categoryId,
@@ -151,7 +155,7 @@ export class CategoryService {
   }
   async searchCategories(filters: {
     name?: string;
-    languageCode?: string;
+    languageCode: string;
     page?: number;
     limit?: number;
   }): Promise<Category[]> {
@@ -159,7 +163,7 @@ export class CategoryService {
   }
   async searchCategoriesCount(filters: {
     name?: string;
-    languageCode?: string;
+    languageCode: string;
   }): Promise<number> {
     return await this.categoryRepository.searchCategoriesCount(filters);
   }
@@ -219,9 +223,9 @@ export class CategoryService {
           `Translation ${categoryTranslation.languageCode.toString().toUpperCase()} already exists for category ${existingTranslation.getId().toString()} - ${existingTranslation.getName(languageCode)}`,
         );
       }
-      const translation = category.getTranslation(languageCode);
+
       //if translation does not exist, check if it already exists
-      if (!translation) {
+      if (!category.hasTranslation(languageCode)) {
         const newTranslation = CategoryTranslation.create({
           name: categoryTranslation.name,
           description: categoryTranslation.description,
@@ -239,49 +243,40 @@ export class CategoryService {
     }
 
     // Update attributes
-    for (const attribute of props.attributes) {
-      if (!attribute.id) {
-        // Create new attribute
-        const newAttributeId = ProductCategoryAttributeId.create();
-        const newAttributeTranslations: ProductCategoryAttributeTranslation[] =
-          [];
+    const currentAttributeIds = props.attributes
+      .map((attr) => attr.id)
+      .filter(Boolean);
+    const existingAttributes = category.getAttributes();
 
-        for (const attributeTranslation of attribute.translations) {
-          if (
-            !this.getActiveLanguage(
-              activeLanguages,
-              attributeTranslation.languageCode,
-            )
-          ) {
-            throw new ConflictException(
-              `Language ${attributeTranslation.languageCode} is not active for attribute`,
-            );
-          }
-
-          const languageCode = LanguageCode.create(
-            attributeTranslation.languageCode,
+    // Rimuovi attributi non più presenti
+    for (const existingAttr of existingAttributes) {
+      if (!currentAttributeIds.includes(existingAttr.getId().toString())) {
+        // Controlla se ci sono prodotti con valori per questo attributo
+        const productsWithValues =
+          await this.productService.findProductsWithAttributeValues(
+            existingAttr.getId(),
           );
-          newAttributeTranslations.push(
-            ProductCategoryAttributeTranslation.create({
-              value: attributeTranslation.name,
-              languageCode: languageCode,
-              attributeId: newAttributeId,
-            }),
+
+        if (productsWithValues.length > 0) {
+          throw new ConflictException(
+            `Cannot remove attributes" because ${productsWithValues.length} products have values for it`,
           );
         }
+        await this.categoryRepository.removeAttributeById(
+          existingAttr.getId().toString(),
+        );
 
-        category.addAttribute(
-          ProductCategoryAttribute.create({
-            translations: newAttributeTranslations,
-            categoryId: category.getId(),
-          }),
-        );
-      } else {
-        // Update existing attribute
-        const existingAttribute = category.findAttributeById(
-          ProductCategoryAttributeId.create(attribute.id),
-        );
-        if (existingAttribute) {
+        category.removeAttributeById(existingAttr.getId());
+      }
+    }
+    if (props.attributes.length > 0) {
+      for (const attribute of props.attributes) {
+        if (!attribute.id) {
+          // Create new attribute
+          const newAttributeId = ProductCategoryAttributeId.create();
+          const newAttributeTranslations: ProductCategoryAttributeTranslation[] =
+            [];
+
           for (const attributeTranslation of attribute.translations) {
             if (
               !this.getActiveLanguage(
@@ -297,26 +292,69 @@ export class CategoryService {
             const languageCode = LanguageCode.create(
               attributeTranslation.languageCode,
             );
-            if (existingAttribute.hasTranslation(languageCode)) {
-              category.updateAttributeTranslation(
-                existingAttribute.getId(),
-                languageCode,
-                attributeTranslation.name,
+            newAttributeTranslations.push(
+              ProductCategoryAttributeTranslation.create({
+                value: attributeTranslation.name,
+                languageCode: languageCode,
+                attributeId: newAttributeId,
+              }),
+            );
+          }
+
+          category.addAttribute(
+            ProductCategoryAttribute.create({
+              translations: newAttributeTranslations,
+              categoryId: category.getId(),
+            }),
+          );
+        } else {
+          // Update existing attribute
+          const existingAttribute = category.findAttributeById(
+            ProductCategoryAttributeId.create(attribute.id),
+          );
+          if (existingAttribute) {
+            for (const attributeTranslation of attribute.translations) {
+              if (
+                !this.getActiveLanguage(
+                  activeLanguages,
+                  attributeTranslation.languageCode,
+                )
+              ) {
+                throw new ConflictException(
+                  `Language ${attributeTranslation.languageCode} is not active for attribute`,
+                );
+              }
+
+              const languageCode = LanguageCode.create(
+                attributeTranslation.languageCode,
               );
-            } else {
-              category.addAttributeTranslation(
-                existingAttribute.getId(),
-                languageCode,
-                attributeTranslation.name,
-              );
+              if (existingAttribute.hasTranslation(languageCode)) {
+                category.updateAttributeTranslation(
+                  existingAttribute.getId(),
+                  languageCode,
+                  attributeTranslation.name,
+                );
+              } else {
+                category.addAttributeTranslation(
+                  existingAttribute.getId(),
+                  languageCode,
+                  attributeTranslation.name,
+                );
+              }
             }
           }
         }
       }
+    } else {
+      await this.categoryRepository.removeAllAttributesByCategoryId(
+        category.getId().getStringValue(),
+      );
+      category.clearAllAttributes();
     }
 
     return await this.categoryRepository.save(category);
   }
+
   private getActiveLanguage(
     languages: Language[],
     languageCode: string,

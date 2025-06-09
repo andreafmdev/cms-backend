@@ -30,4 +30,8 @@ export class CreateProductFormRequest {
   @IsNotEmpty({ message: 'Translations are mandatory' })
   @IsJSON({ message: 'Translations must be a valid JSON' })
   translations: string;
+
+  @IsNotEmpty({ message: 'Attributes are mandatory' })
+  @IsJSON({ message: 'Attributes must be a valid JSON' })
+  attributes: string;
 }

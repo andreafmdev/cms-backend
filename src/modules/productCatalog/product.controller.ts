@@ -35,6 +35,7 @@ import {
 } from '@x6tech/nest-file-fastify';
 import { ProductTranslationDto } from './application/dto/product-translation.dto';
 import { CreateProductFormRequest } from './application/commands/create-product/create-product-form.request';
+import { ProductAttributeValueDto } from './application/dto/product-attribute-value.dto';
 
 @ApiTags('Products')
 @Controller('products')
@@ -112,6 +113,7 @@ export class ProductController {
       request.isFeatured === 'true',
       JSON.parse(request.translations) as ProductTranslationDto[],
       files.images ?? [],
+      JSON.parse(request.attributes) as ProductAttributeValueDto[],
     );
     return await this.commandBus.execute(command);
   }

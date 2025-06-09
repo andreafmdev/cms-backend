@@ -116,7 +116,11 @@ export class CategoryController {
     @Query() request: GetCategoryDetailRequestDto,
   ): Promise<GetCategoryDetailResponseDto> {
     return this.queryBus.execute(
-      new GetCategoryDetailQuery(id, request.languageCode),
+      new GetCategoryDetailQuery(
+        id,
+        request.languageCode,
+        request.includeAllTranslations,
+      ),
     );
   }
   //create category

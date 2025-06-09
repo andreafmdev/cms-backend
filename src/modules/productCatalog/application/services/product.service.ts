@@ -14,6 +14,9 @@ import { ProductImage } from '@module/productCatalog/domain/entities/product-ima
 import { ImageUrl } from '@module/productCatalog/domain/value-objects/image-url';
 import { BrandRepository } from '@module/productCatalog/infrastructure/repositories/brand-repository';
 import { CategoryRepository } from '@module/productCatalog/infrastructure/repositories/category-repository';
+import { ProductAttributeValueDto } from '../dto/product-attribute-value.dto';
+import { ProductCategoryAttributeId } from '@module/productCatalog/domain/value-objects/product-category-attribute-id';
+import { ProductCategoryAttributeValue } from '@module/productCatalog/domain/entities/product-category-attribute-value';
 interface ProductFilter extends FindOptionsWhere<ProductOrmEntity> {
   page?: number;
   limit?: number;
@@ -71,6 +74,7 @@ export class ProductService {
     categoryId: string;
     isAvailable: boolean;
     isFeatured: boolean;
+    attributes: ProductAttributeValueDto[];
   }): Promise<Product> {
     const productId = ProductId.create();
 
@@ -102,6 +106,13 @@ export class ProductService {
         isMain: false,
       }),
     );
+    const productAttributesValues = props.attributes.map((attribute) =>
+      ProductCategoryAttributeValue.create({
+        productId: productId,
+        attributeId: ProductCategoryAttributeId.create(attribute.attributeId),
+        value: attribute.value,
+      }),
+    );
     const product = Product.create({
       id: productId,
       price: props.price,
@@ -109,7 +120,8 @@ export class ProductService {
       categoryId: productCategoryId,
       translations: productTranslations,
       image: productImage.length > 0 ? productImage : [],
-      attributesValues: [],
+      attributesValues:
+        productAttributesValues.length > 0 ? productAttributesValues : [],
       isAvailable: props.isAvailable,
       isFeatured: props.isFeatured,
     });
@@ -153,9 +165,44 @@ export class ProductService {
       languageCode,
     );
   }
+  async findProductCategoryAttributes(
+    productId: ProductId,
+    languageCode: string,
+  ): Promise<
+    {
+      id: string;
+      name: string;
+      value: string;
+      hasValue: boolean;
+    }[]
+  > {
+    const attributes =
+      await this.categoryRepository.findAllProductsAttributesInCategory(
+        productId.getValue().toString(),
+        languageCode,
+      );
+    return attributes.map((attribute) => ({
+      id: attribute.attributeId,
+      name: attribute.attributeName,
+      value: attribute.attributeValue,
+      hasValue: attribute.hasValue,
+    }));
+  }
+
   async findProductsByCategoryId(categoryId: CategoryId): Promise<Product[]> {
     return this.productRepository.findAllByCondition({
       filters: { categoryId: categoryId.getValue().toString() },
+    });
+  }
+  async findProductsWithAttributeValues(
+    attributeId: ProductCategoryAttributeId,
+  ): Promise<Product[]> {
+    return this.productRepository.findAllByCondition({
+      filters: {
+        attributesValues: {
+          attributeId: attributeId.getValue().toString(),
+        },
+      },
     });
   }
 }

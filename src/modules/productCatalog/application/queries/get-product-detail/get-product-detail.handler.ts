@@ -42,7 +42,7 @@ export class GetProductDetailHandler
     const images = product.getProductImages();
 
     const productAttributes =
-      await this.productService.findProductCategoryAttributesWithValues(
+      await this.productService.findProductCategoryAttributes(
         product.getId(),
         languageCode.getValue(),
       );

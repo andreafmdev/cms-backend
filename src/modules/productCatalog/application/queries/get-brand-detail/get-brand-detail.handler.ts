@@ -14,7 +14,7 @@ export class GetBrandDetailHandler
   async execute(
     query: GetBrandDetailQuery,
   ): Promise<GetBrandDetailResponseDto> {
-    const brandId = BrandId.create(query.request.id);
+    const brandId = BrandId.create(query.id);
     const brand = await this.brandService.findBrandById(brandId);
 
     return plainToInstance(GetBrandDetailResponseDto, {

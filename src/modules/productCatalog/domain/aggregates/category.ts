@@ -221,15 +221,31 @@ export class Category extends AggregateRoot<CategoryId> {
   }
 
   /**
+   * Clear all attributes from the category
+   */
+  clearAllAttributes(): void {
+    this.attributes.forEach((attribute) => {
+      attribute.clearAllTranslations();
+    });
+    this.attributes.length = 0;
+  }
+  /**
    * Remove an attribute by ID
    * @param attributeId - The ID of the attribute to remove
    */
   removeAttributeById(attributeId: ProductCategoryAttributeId): void {
-    const index = this.attributes.findIndex((attr) =>
-      attr.getId()?.equals(attributeId),
-    );
-    if (index !== -1) {
-      this.attributes.splice(index, 1);
+    const attribute = this.findAttributeById(attributeId);
+    if (attribute) {
+      // Prima svuota le traduzioni
+      attribute.clearAllTranslations();
+
+      // Poi rimuovi l'attributo
+      const index = this.attributes.findIndex((attr) =>
+        attr.getId()?.equals(attributeId),
+      );
+      if (index !== -1) {
+        this.attributes.splice(index, 1);
+      }
     }
   }
 

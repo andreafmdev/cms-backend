@@ -26,13 +26,20 @@ export class SearchCategoriesHandler
     if (!defaultLanguage) {
       throw new NotFoundException('Default language not found');
     }
+    const serviceFilters = {
+      ...filters,
+      languageCode: filters.languageCode!,
+    };
     const defaultLanguageCode = defaultLanguage.getCode().getValue();
-    filters.languageCode = defaultLanguageCode;
+    if (!serviceFilters.languageCode) {
+      serviceFilters.languageCode = defaultLanguageCode;
+    }
+
     const [categories, totalCategories] = await Promise.all([
-      this.categoryService.searchCategories(filters),
-      this.categoryService.searchCategoriesCount(filters),
+      this.categoryService.searchCategories(serviceFilters),
+      this.categoryService.searchCategoriesCount(serviceFilters),
     ]);
-    const languageCode = LanguageCode.create(defaultLanguageCode);
+    const languageCode = LanguageCode.create(serviceFilters.languageCode);
     categoriesResults = await Promise.all(
       categories.map((category) => {
         return plainToInstance(SearchCategoriesResponseDto, {

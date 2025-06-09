@@ -1,7 +1,5 @@
-import { GetBrandDetailRequestDto } from './get-brand-detail.request';
-
 export class GetBrandDetailQuery {
-  constructor(public readonly request: GetBrandDetailRequestDto) {
-    this.request = request;
+  constructor(public readonly id: string) {
+    this.id = id;
   }
 }

@@ -8,6 +8,9 @@ import { CategoryId } from '@module/productCatalog/domain/value-objects/category
 import { Category } from '@module/productCatalog/domain/aggregates/category';
 import { CategoryMapper } from '../mapper/category-mapper';
 import { ProductCategoryAttributeValueOrmEntity } from '../entities/product-category-attribute-value.orm-entity';
+import { ProductCategoryAttributeOrmEntity } from '../entities/product-category-attribute.orm-entity';
+import { ProductCategoryAttributeTranslationOrmEntity } from '../entities/product-category-attribute-translation.orm-entity';
+import { ProductOrmEntity } from '../entities/product.orm-entity';
 //custom type
 interface AttributeWithValue {
   attributeId: string;
@@ -107,20 +110,22 @@ export class CategoryRepository
 
   async searchCategories(filters: {
     name?: string;
-    languageCode?: string;
+    languageCode: string;
     page?: number;
     limit?: number;
   }): Promise<Category[]> {
     const query = this.buildSearchQuery(filters);
     const limit = filters.limit ?? process.env.DEFAULT_LIMIT;
     const page = filters.page ?? process.env.DEFAULT_PAGE;
-    query.skip(Number(page) * Number(limit)).take(Number(limit));
+    const safePage = Math.max(1, Number(page) || 1); // assicura che sia almeno 1
+    const safeLimit = Math.max(1, Number(limit) || 10); // assicura che sia almeno 1
+    query.skip((safePage - 1) * safeLimit).take(safeLimit);
     const ormEntities = await query.getMany();
     return ormEntities.map((orm) => this.mapper.toDomain(orm));
   }
   async searchCategoriesCount(filters: {
     name?: string;
-    languageCode?: string;
+    languageCode: string;
   }): Promise<number> {
     const query = this.buildSearchQuery(filters);
     return await query.getCount();
@@ -147,34 +152,97 @@ export class CategoryRepository
       )
       .where('value.productId = :productId', { productId })
       .select([
-        'attribute.id AS attributeId',
-        'translation.value AS attributeName',
-        'value.value AS attributeValue',
+        'attribute.id AS "attributeId"',
+        'translation.value AS "attributeName"',
+        'value.value AS "attributeValue"',
       ])
       .getRawMany<AttributeWithValue>();
 
     return results;
   }
   /**
+   * Find all product category attributes
+   * @param productId - The ID of the product to find
+   * @param languageCode - The language code of the category to find
+  
+   * @returns The product category attributes with values and if they have a value (AttributeWithValue & { hasValue: boolean }[])
+   */
+  async findAllProductsAttributesInCategory(
+    productId: string,
+    languageCode: string,
+  ) {
+    const results = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'catAttr.id AS "attributeId"',
+        'translation.value AS "attributeName"',
+        'prodValues.value AS "attributeValue"',
+        'CASE WHEN prodValues.value IS NOT NULL THEN true ELSE false END AS "hasValue"',
+      ])
+      .from(ProductOrmEntity, 'product')
+      .innerJoin(
+        ProductCategoryAttributeOrmEntity,
+        'catAttr',
+        'product.categoryId = catAttr.categoryId',
+      )
+      .innerJoin(
+        ProductCategoryAttributeTranslationOrmEntity,
+        'translation',
+        'catAttr.id = translation.attributeId',
+      )
+      .leftJoin(
+        ProductCategoryAttributeValueOrmEntity,
+        'prodValues',
+        'catAttr.id = prodValues.attributeId AND prodValues.productId = product.id',
+      )
+      .where('translation.languageCode = :lang', { lang: languageCode })
+      .andWhere('product.id = :productId', { productId })
+      .orderBy('catAttr.id')
+      .getRawMany<AttributeWithValue & { hasValue: boolean }>();
+
+    return results;
+  }
+  async removeAttributeById(attributeId: string): Promise<void> {
+    await this.dataSource
+      .getRepository(ProductCategoryAttributeOrmEntity)
+      .delete(attributeId);
+  }
+  async removeAllAttributesByCategoryId(categoryId: string): Promise<void> {
+    await this.dataSource
+      .getRepository(ProductCategoryAttributeOrmEntity)
+      .delete({ categoryId });
+  }
+  /*HELPERS*/
+  /**
    * Build a search query for categories
    * @param filters - The filters to apply to the query
    * @returns The built query (SelectQueryBuilder)
    */
-  private buildSearchQuery(filters: { name?: string; languageCode?: string }) {
+  private buildSearchQuery(filters: { name?: string; languageCode: string }) {
     const query = this.repository.createQueryBuilder('categories');
-    query.leftJoinAndSelect('categories.translations', 'translation');
+    query.innerJoinAndSelect(
+      'categories.translations',
+      'translation',
+      'translation.languageCode = :languageCode',
+      { languageCode: filters.languageCode },
+    );
     query.leftJoinAndSelect('categories.attributes', 'attribute');
-    query.leftJoinAndSelect('attribute.translations', 'attributeTranslation');
+    query.leftJoinAndSelect(
+      'attribute.translations',
+      'attributeTranslation',
+      'attributeTranslation.languageCode = :languageCode',
+      { languageCode: filters.languageCode },
+    );
+
     if (filters.name) {
-      query.andWhere('translation.name LIKE :name', {
+      query.andWhere('translation.name ILIKE :name', {
         name: `%${filters.name}%`,
       });
     }
-    if (filters.languageCode) {
-      query.andWhere('attributeTranslation.languageCode = :languageCode', {
-        languageCode: filters.languageCode,
-      });
-    }
+
+    //query.orderBy('categories.updated_at', 'DESC');
+    //query.addOrderBy('categories.created_at', 'DESC');
+
     return query;
   }
 }

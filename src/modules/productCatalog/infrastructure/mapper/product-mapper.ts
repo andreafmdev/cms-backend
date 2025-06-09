@@ -70,6 +70,9 @@ export class ProductMapper extends BaseMapper<Product, ProductOrmEntity> {
     orm.translations = domainEntity
       .getTranslations()
       .map((t) => this.productTranslationMapper.toPersistence(t));
+    orm.attributesValues = domainEntity
+      .getAttributesValues()
+      .map((a) => this.productCategoryAttributeValueMapper.toPersistence(a));
     return orm;
   }
 }

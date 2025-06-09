@@ -21,6 +21,34 @@ export class GetCategoryDetailHandler
     query: GetCategoryDetailQuery,
   ): Promise<GetCategoryDetailResponseDto> {
     const categoryId = CategoryId.create(query.id);
+
+    const category = await this.categoryService.findCategoryById(categoryId);
+    if (!category) {
+      throw new NotFoundException(
+        `Category ${categoryId.getStringValue()} not found`,
+      );
+    }
+
+    // Se includeAllTranslations è true, restituisci tutte le traduzioni
+    if (query.includeAllTranslations) {
+      return plainToInstance(GetCategoryDetailResponseDto, {
+        id: category.getId().toString(),
+        translations: category.getTranslations().map((translation) => ({
+          languageCode: translation.getLanguageCode().getValue(),
+          name: translation.getName(),
+          description: translation.getDescription(),
+        })),
+        attributes: category.getAttributes().map((attribute) => ({
+          id: attribute.getId().toString(),
+          translations: attribute.getTranslations().map((translation) => ({
+            languageCode: translation.getLanguageCode().getValue(),
+            value: translation.getValue(),
+          })),
+        })),
+      });
+    }
+
+    // Altrimenti comportamento normale (una lingua)
     const languageCode = LanguageCode.create(query.languageCode);
     const activeLanguage =
       await this.languageService.findActiveLanguageByCode(languageCode);
@@ -29,17 +57,12 @@ export class GetCategoryDetailHandler
         `Language ${languageCode.getValue()} is not active`,
       );
     }
-    const category = await this.categoryService.findCategoryById(categoryId);
-    if (!category) {
-      throw new NotFoundException(
-        `Category ${categoryId.getStringValue()} not found`,
-      );
-    }
+
     return plainToInstance(GetCategoryDetailResponseDto, {
-      id: category?.getId().toString(),
-      name: category?.getName(languageCode),
-      description: category?.getDescription(languageCode),
-      attributes: category?.getAttributes().map((el) => ({
+      id: category.getId().toString(),
+      name: category.getName(languageCode),
+      description: category.getDescription(languageCode),
+      attributes: category.getAttributes().map((el) => ({
         id: el.getId().toString(),
         name: el.getName(languageCode),
       })),

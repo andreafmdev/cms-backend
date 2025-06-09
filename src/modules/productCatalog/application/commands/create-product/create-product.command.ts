@@ -1,5 +1,6 @@
 import { MemoryStorageFile } from '@x6tech/nest-file-fastify';
 import { ProductTranslationDto } from '../../dto/product-translation.dto';
+import { ProductAttributeValueDto } from '../../dto/product-attribute-value.dto';
 
 export class CreateProductCommand {
   constructor(
@@ -10,5 +11,6 @@ export class CreateProductCommand {
     public readonly isFeatured: boolean,
     public readonly translations: ProductTranslationDto[],
     public readonly image: MemoryStorageFile[],
+    public readonly attributes: ProductAttributeValueDto[],
   ) {}
 }

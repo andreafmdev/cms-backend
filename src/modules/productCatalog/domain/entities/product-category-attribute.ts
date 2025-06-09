@@ -171,7 +171,9 @@ export class ProductCategoryAttribute extends BaseDomainEntity<ProductCategoryAt
       this.translations.splice(index, 1);
     }
   }
-
+  clearAllTranslations(): void {
+    this.translations.length = 0;
+  }
   replaceTranslations(
     translations: ProductCategoryAttributeTranslation[],
   ): void {

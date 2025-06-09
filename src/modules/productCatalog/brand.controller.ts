@@ -24,7 +24,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { SearchBrandsQuery } from './application/queries/search-brands/search-brands.query';
 import { SearchBrandsResponseDto } from './application/queries/search-brands/search-brands.response';
 import { SearchBrandsRequestDto } from './application/queries/search-brands/search-brands.request';
-import { GetBrandDetailRequestDto } from './application/queries/get-brand-detail/get-brand-detail.request';
 import { GetBrandDetailResponseDto } from './application/queries/get-brand-detail/get-brand-detail.response';
 import { GetBrandDetailQuery } from './application/queries/get-brand-detail/get-brand-detail.query';
 import { GetBrandsRequestDto } from './application/queries/get-brands/get-brands-request';
@@ -86,7 +85,7 @@ export class BrandController {
     return await this.queryBus.execute(new SearchBrandsQuery(request));
   }
   //detail brand
-  @Get('detail')
+  @Get(':id')
   @RequireGroup('ADMIN')
   @ApiOperation({ summary: 'Get brand by id' })
   @ApiResponse({
@@ -95,10 +94,9 @@ export class BrandController {
   })
   @ApiBearerAuth()
   async getBrandById(
-    @Query() request: GetBrandDetailRequestDto,
+    @Param('id') id: string,
   ): Promise<GetBrandDetailResponseDto> {
-    const query = new GetBrandDetailQuery(request);
-    return await this.queryBus.execute(query);
+    return this.queryBus.execute(new GetBrandDetailQuery(id));
   }
   //get brand options (select options)
   @Get('options')
