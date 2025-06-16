@@ -34,7 +34,6 @@ export class GetProductDetailHandler
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    const translation = product.getTranslation(languageCode);
     const brand = await this.brandService.findBrandById(product.getBrandId());
     const category = await this.categoryService.findCategoryById(
       product.getCategoryId(),
@@ -48,10 +47,13 @@ export class GetProductDetailHandler
       );
     return plainToInstance(GetProductDetailResponseDto, {
       id: product.getId().toString(),
-      name: translation.getName(),
+      translations: product.getTranslations().map((translation) => ({
+        languageCode: translation.getLanguageCode().getValue(),
+        name: translation.getName(),
+        description: translation.getDescription(),
+      })),
       isAvailable: product.IsAvailable(),
       isFeatured: product.IsFeatured(),
-      description: translation.getDescription(),
       price: product.getPrice(),
       brand: {
         id: brand?.getId().toString(),

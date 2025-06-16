@@ -29,15 +29,21 @@ class AttributeDto {
   @Expose()
   value: string;
 }
+class TranslationDto {
+  @Expose()
+  languageCode: string;
+  @Expose()
+  name: string;
+  @Expose()
+  description: string;
+}
 @Expose()
 export class GetProductDetailResponseDto {
   @Expose()
   id: string;
   @Expose()
-  name: string;
-
-  @Expose()
-  description: string;
+  @Type(() => TranslationDto)
+  translations: TranslationDto[];
   @Expose()
   price: number;
   @Expose()

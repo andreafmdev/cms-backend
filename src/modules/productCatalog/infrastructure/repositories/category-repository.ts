@@ -100,7 +100,7 @@ export class CategoryRepository
       .leftJoinAndSelect('category.translations', 'translation')
       .leftJoinAndSelect('category.attributes', 'attribute')
       .leftJoinAndSelect('attribute.translations', 'attributeTranslation')
-      .where('LOWER(translation.name) LIKE LOWER(:name)', { name: `%${name}%` })
+      .where('translation.name ILIKE :name', { name: name })
       .andWhere('translation.languageCode = :languageCode', { languageCode })
       .andWhere('category.id != :id', { id: id })
       .getOne();

@@ -170,11 +170,11 @@ export class CategoryService {
   async deleteCategory(id: CategoryId): Promise<boolean> {
     const category = await this.findCategoryById(id);
     if (!category) {
-      throw new NotFoundException('Category not found');
+      throw new NotFoundException('Categoria non trovata');
     }
     const products = await this.productService.findProductsByCategoryId(id);
     if (products.length > 0) {
-      throw new ConflictException('Category has products');
+      throw new ConflictException('La categoria ha prodotti');
     }
 
     await this.categoryRepository.remove(category);
@@ -192,7 +192,7 @@ export class CategoryService {
     const activeLanguages = await this.languageService.findAllActiveLanguages();
 
     if (!category) {
-      throw new NotFoundException('Category not found');
+      throw new NotFoundException('Categoria non trovata');
     }
 
     // Update translations
@@ -204,7 +204,7 @@ export class CategoryService {
         )
       ) {
         throw new ConflictException(
-          `Language ${categoryTranslation.languageCode} is not active for category`,
+          `La lingua ${categoryTranslation.languageCode} non è attiva per la categoria`,
         );
       }
       //check if translation already exists
@@ -214,13 +214,13 @@ export class CategoryService {
       );
       const existingTranslation =
         await this.categoryRepository.findExistingCategoryTranslation(
-          categoryTranslation.name,
+          categoryTranslation.name.trim(),
           categoryTranslation.languageCode,
           category.getId().getStringValue(),
         );
       if (existingTranslation) {
         throw new ConflictException(
-          `Translation ${categoryTranslation.languageCode.toString().toUpperCase()} already exists for category ${existingTranslation.getId().toString()} - ${existingTranslation.getName(languageCode)}`,
+          `Una categoria con questa traduzione (${categoryTranslation.languageCode.toString().toUpperCase()}) esiste già`,
         );
       }
 
@@ -259,7 +259,7 @@ export class CategoryService {
 
         if (productsWithValues.length > 0) {
           throw new ConflictException(
-            `Cannot remove attributes" because ${productsWithValues.length} products have values for it`,
+            `Impossibile rimuovere gli attributi perché ${productsWithValues.length} prodotti hanno valori per essi`,
           );
         }
         await this.categoryRepository.removeAttributeById(
