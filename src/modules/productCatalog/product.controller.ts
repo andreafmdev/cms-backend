@@ -1,4 +1,4 @@
-import { RequireGroup } from '@module/auth/decorator/auth.decorator';
+import { Roles } from 'nest-keycloak-connect';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { QueryBus, CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -51,7 +51,7 @@ export class ProductController {
    */
   @Post('search')
   @HttpCode(200)
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({
     status: 200,
@@ -72,7 +72,7 @@ export class ProductController {
    * @returns The created product
    */
   @Get()
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({
     status: 200,
@@ -93,7 +93,7 @@ export class ProductController {
    * @returns The created product
    */
   @Post()
-  @RequireGroup('ADMIN')
+  @Roles('tm-read', 'tm-write')
   @ApiOperation({ summary: 'Create a new product' })
   @ApiBearerAuth()
   @UseInterceptors(
@@ -119,6 +119,7 @@ export class ProductController {
   }
   //get product catalog
   @Get('catalog')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get product catalog' })
   async getProductCatalog(
     @Query() request: ProductCatalogFilterDto,
@@ -129,7 +130,7 @@ export class ProductController {
   }
   //get product detail
   @Get('detail/:id')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get product detail' })
   @ApiBearerAuth()
   async getProductDetail(

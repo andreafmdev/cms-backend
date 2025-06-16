@@ -2,15 +2,19 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '@base/infrastructure/database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HealthModule } from '@module/healthCheck/health.module';
-import { UserModule } from '@module/users/user.module';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { LoggerModule } from 'nestjs-pino';
 //import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionFilter } from '@shared/filters/global-exception.filter';
-import { AuthModule } from '@module/auth/auth.module';
 import { ProductModule } from '@module/productCatalog/product.module';
+import {
+  KeycloakConnectModule,
+  AuthGuard,
+  RoleGuard,
+} from 'nest-keycloak-connect';
+import { APP_GUARD } from '@nestjs/core';
 
 const GlobalFilterProvider = {
   provide: APP_FILTER,
@@ -65,13 +69,29 @@ const GlobalFilterProvider = {
       }),
       inject: [ConfigService],
     }),
-    AuthModule,
+    KeycloakConnectModule.register({
+      authServerUrl: process.env.KEYCLOAK_AUTH_SERVER_URL,
+      realm: process.env.KEYCLOAK_REALM,
+      clientId: process.env.KEYCLOAK_CLIENT_ID,
+      secret: process.env.KEYCLOAK_SECRET || '',
+    }),
     DatabaseModule,
-    UserModule,
+    //UserModule,
     HealthModule,
     ProductModule,
   ], // Importa DatabaseModule
-  providers: [CommandBus, GlobalFilterProvider],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
+    },
+    CommandBus,
+    GlobalFilterProvider,
+  ],
 })
 export class AppModule {
   constructor() {}

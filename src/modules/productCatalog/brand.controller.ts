@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { RequireGroup } from '@module/auth/decorator/auth.decorator';
+import { Roles } from 'nest-keycloak-connect';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -46,7 +46,7 @@ export class BrandController {
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
   ) {}
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @Get('test')
   async test(): Promise<string> {
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -54,7 +54,7 @@ export class BrandController {
   }
   @Post('get-all')
   @HttpCode(200)
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,
@@ -72,7 +72,7 @@ export class BrandController {
   }
   @Post('search')
   @HttpCode(200)
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Search brands' })
   @ApiResponse({
     status: 200,
@@ -86,7 +86,7 @@ export class BrandController {
   }
   //detail brand
   @Get(':id')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get brand by id' })
   @ApiResponse({
     status: 200,
@@ -114,7 +114,7 @@ export class BrandController {
   }
   //create brand
   @Post('')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read', 'tm-write')
   @ApiOperation({ summary: 'Create a new brand' })
   @ApiBearerAuth()
   async createBrand(
@@ -125,7 +125,7 @@ export class BrandController {
   }
   //update brand
   @Patch(':id')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read', 'tm-write')
   @ApiOperation({ summary: 'Update a brand' })
   @ApiBearerAuth()
   async updateBrand(
@@ -137,7 +137,7 @@ export class BrandController {
   }
   //delete brand
   @Delete(':id')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read', 'tm-write', 'tm-delete')
   @ApiOperation({ summary: 'Delete a brand' })
   @ApiBearerAuth()
   async deleteBrand(@Param('id') id: string): Promise<DeleteBrandResponse> {

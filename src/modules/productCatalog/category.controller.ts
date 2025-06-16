@@ -10,7 +10,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { RequireGroup } from '@module/auth/decorator/auth.decorator';
+import { Roles } from 'nest-keycloak-connect';
+
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -48,7 +49,7 @@ export class CategoryController {
     private readonly commandBus: CommandBus,
   ) {}
   //test
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @Get('test')
   async test(): Promise<string> {
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -56,7 +57,7 @@ export class CategoryController {
   }
   //get all categories
   @Get()
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({
     status: 200,
@@ -72,6 +73,7 @@ export class CategoryController {
   }
   //search category options
   @Post('options')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Search category options' })
   @ApiResponse({
     status: 200,
@@ -88,7 +90,7 @@ export class CategoryController {
   //search category by params
   @Post('search')
   @HttpCode(200)
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Search category by name' })
   @ApiResponse({
     status: 200,
@@ -104,7 +106,7 @@ export class CategoryController {
   }
   //detail category
   @Get(':id')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get category by id' })
   @ApiResponse({
     status: 200,
@@ -125,7 +127,7 @@ export class CategoryController {
   }
   //create category
   @Post()
-  @RequireGroup('ADMIN')
+  @Roles('tm-read', 'tm-write')
   @ApiOperation({ summary: 'Create category' })
   @ApiBearerAuth()
   createCategory(
@@ -137,7 +139,7 @@ export class CategoryController {
   }
   //update category
   @Patch(':id')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read', 'tm-write')
   @ApiOperation({ summary: 'Update category' })
   @ApiBearerAuth()
   updateCategory(
@@ -150,7 +152,7 @@ export class CategoryController {
   }
   //delete category
   @Delete(':id')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read', 'tm-write', 'tm-delete')
   @ApiOperation({ summary: 'Delete category' })
   @ApiBearerAuth()
   deleteCategory(@Param('id') id: string): Promise<DeleteCategoryResponse> {
@@ -158,7 +160,7 @@ export class CategoryController {
   }
   //get category attributes
   @Get(':id/attributes')
-  @RequireGroup('ADMIN')
+  @Roles('tm-read')
   @ApiOperation({ summary: 'Get category attributes' })
   @ApiBearerAuth()
   @ApiQuery({ type: GetCategoryAttributesRequestDto })
