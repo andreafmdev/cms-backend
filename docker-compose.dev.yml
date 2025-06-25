@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: db-dev
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: tamagnipianostore_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  landing:
+    build: ./landing
+    container_name: landing-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./landing:/app
+    depends_on:
+      - db
+    environment:
+      NEXT_PUBLIC_API_URL: http://cms-backend:4000
+
+  cms-backend:
+    build: ./cms/backend
+    container_name: backend-dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./cms/backend:/app
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://dev_user:dev_password@db:5432/tamagnipianostore_dev
+
+  cms-frontend:
+    build: ./cms/frontend
+    container_name: frontend-dev
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./cms/frontend:/app
+    depends_on:
+      - cms-backend
+    environment:
+      REACT_APP_BACKEND_URL: http://cms-backend:4000
+
+volumes:
+  pgdata:
