@@ -12,7 +12,7 @@ import { ProductModule } from '@module/productCatalog/product.module';
 import {
   KeycloakConnectModule,
   AuthGuard,
-  RoleGuard,
+  //RoleGuard,
 } from 'nest-keycloak-connect';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -85,10 +85,10 @@ const GlobalFilterProvider = {
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
-    {
+    /*{
       provide: APP_GUARD,
       useClass: RoleGuard,
-    },
+    },*/
     CommandBus,
     GlobalFilterProvider,
   ],

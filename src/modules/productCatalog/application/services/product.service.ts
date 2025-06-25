@@ -140,6 +140,78 @@ export class ProductService {
   }): Promise<Product[]> {
     return this.productRepository.searchProducts(filters);
   }
+  async updateProduct(
+    id: string,
+    props: {
+      price: number;
+      brandId: string;
+      categoryId: string;
+      isAvailable: boolean;
+      isFeatured: boolean;
+      translations: ProductTranslationDto[];
+      images: string[];
+      attributes: ProductAttributeValueDto[];
+    },
+  ): Promise<Product> {
+    const productId = ProductId.create(id);
+    const product = await this.productRepository.findById(productId);
+
+    if (!product) {
+      throw new NotFoundException('Prodotto non esistente');
+    }
+
+    const brand = await this.brandRepository.findById(
+      BrandId.create(props.brandId),
+    );
+    if (!brand) {
+      throw new NotFoundException('Brand non esistente');
+    }
+
+    const category = await this.categoryRepository.findById(
+      CategoryId.create(props.categoryId),
+    );
+    if (!category) {
+      throw new NotFoundException('Categoria non esistente');
+    }
+
+    const productTranslations = props.translations.map((translation) =>
+      ProductTranslation.create({
+        languageCode: LanguageCode.create(translation.languageCode),
+        name: translation.name,
+        description: translation.description,
+        productId: productId,
+      }),
+    );
+
+    const productImages = props.images.map((image) =>
+      ProductImage.create({
+        url: ImageUrl.create(image),
+        isMain: false,
+      }),
+    );
+
+    const productAttributesValues = props.attributes.map((attribute) =>
+      ProductCategoryAttributeValue.create({
+        productId: productId,
+        attributeId: ProductCategoryAttributeId.create(attribute.attributeId),
+        value: attribute.value,
+      }),
+    );
+
+    product.update({
+      price: props.price,
+      brandId: BrandId.create(props.brandId),
+      categoryId: CategoryId.create(props.categoryId),
+      isAvailable: props.isAvailable,
+      isFeatured: props.isFeatured,
+      translations: productTranslations,
+      image: productImages.length > 0 ? productImages : [],
+      attributesValues:
+        productAttributesValues.length > 0 ? productAttributesValues : [],
+    });
+
+    return await this.productRepository.save(product);
+  }
   async searchProductsCount(filters: {
     name?: string;
     categoryId?: string;

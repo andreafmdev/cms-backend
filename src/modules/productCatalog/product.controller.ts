@@ -1,4 +1,4 @@
-import { Roles } from 'nest-keycloak-connect';
+//import { Roles } from 'nest-keycloak-connect';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { QueryBus, CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -7,6 +7,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Query,
   UseInterceptors,
@@ -34,8 +35,10 @@ import {
   UploadedFiles,
 } from '@x6tech/nest-file-fastify';
 import { ProductTranslationDto } from './application/dto/product-translation.dto';
-import { CreateProductFormRequest } from './application/commands/create-product/create-product-form.request';
 import { ProductAttributeValueDto } from './application/dto/product-attribute-value.dto';
+import { ProductFormRequest } from './application/dto/request/product/product-form.request';
+import { UpdateProductResponseDto } from './application/commands/update-product/update-product.response';
+import { UpdateProductCommand } from './application/commands/update-product/update-product.command';
 
 @ApiTags('Products')
 @Controller('products')
@@ -51,7 +54,7 @@ export class ProductController {
    */
   @Post('search')
   @HttpCode(200)
-  @Roles('tm-read')
+  //@Roles('tm-read')
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({
     status: 200,
@@ -72,7 +75,7 @@ export class ProductController {
    * @returns The created product
    */
   @Get()
-  @Roles('tm-read')
+  //@Roles('tm-read')
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({
     status: 200,
@@ -93,7 +96,7 @@ export class ProductController {
    * @returns The created product
    */
   @Post()
-  @Roles('tm-read', 'tm-write')
+  //@Roles('tm-read', 'tm-write')
   @ApiOperation({ summary: 'Create a new product' })
   @ApiBearerAuth()
   @UseInterceptors(
@@ -102,7 +105,7 @@ export class ProductController {
     ]),
   )
   async createProduct(
-    @Body() request: CreateProductFormRequest,
+    @Body() request: ProductFormRequest,
     @UploadedFiles() files: { images?: MemoryStorageFile[] },
   ): Promise<CreateProductResponseDto> {
     const command = new CreateProductCommand(
@@ -113,13 +116,15 @@ export class ProductController {
       request.isFeatured === 'true',
       JSON.parse(request.translations) as ProductTranslationDto[],
       files.images ?? [],
-      JSON.parse(request.attributes) as ProductAttributeValueDto[],
+      request.attributes && request.attributes.length > 0
+        ? (JSON.parse(request.attributes) as ProductAttributeValueDto[])
+        : [],
     );
     return await this.commandBus.execute(command);
   }
   //get product catalog
   @Get('catalog')
-  @Roles('tm-read')
+  //@Roles('tm-read')
   @ApiOperation({ summary: 'Get product catalog' })
   async getProductCatalog(
     @Query() request: ProductCatalogFilterDto,
@@ -130,7 +135,7 @@ export class ProductController {
   }
   //get product detail
   @Get('detail/:id')
-  @Roles('tm-read')
+  //@Roles('tm-read')
   @ApiOperation({ summary: 'Get product detail' })
   @ApiBearerAuth()
   async getProductDetail(
@@ -139,5 +144,40 @@ export class ProductController {
   ): Promise<GetProductDetailResponseDto> {
     const query = new GetProductDetailQuery(id, request.languageCode);
     return await this.queryBus.execute(query);
+  }
+  //update product
+  @Patch(':id')
+  //@Roles('tm-read', 'tm-write')
+  @ApiOperation({ summary: 'Update product' })
+  @ApiBearerAuth()
+  async updateProduct(
+    @Param('id') id: string,
+    @Body() request: ProductFormRequest,
+    @UploadedFiles() files: { images?: MemoryStorageFile[] },
+  ): Promise<UpdateProductResponseDto> {
+    const translations = JSON.parse(
+      request.translations,
+    ) as ProductTranslationDto[];
+    const attributes = JSON.parse(
+      request.attributes,
+    ) as ProductAttributeValueDto[];
+    const images =
+      files.images?.map((image) => ({
+        idImage: image.originalFilename,
+        isMain: false,
+        content: image,
+      })) ?? [];
+    const command = new UpdateProductCommand(
+      id,
+      parseFloat(request.price),
+      request.brandId,
+      request.categoryId,
+      request.isAvailable === 'true',
+      request.isFeatured === 'true',
+      translations,
+      images,
+      attributes,
+    );
+    return await this.commandBus.execute(command);
   }
 }
