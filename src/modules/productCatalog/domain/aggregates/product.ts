@@ -243,6 +243,9 @@ export class Product extends AggregateRoot<ProductId> {
   getProductImages(): ProductImage[] {
     return this.image;
   }
+  getProductImagesInOrder(): ProductImage[] {
+    return this.image.sort((a, b) => a.getOrder() - b.getOrder());
+  }
   getTranslation(languageCode: LanguageCode): ProductTranslation {
     return (
       this.translations.find((t) => t.getLanguageCode().equals(languageCode)) ??
@@ -426,6 +429,23 @@ export class Product extends AggregateRoot<ProductId> {
     if (index !== -1) {
       this.image.splice(index, 1);
     }
+  }
+
+  /**
+   * Restituisce le immagini ordinate con opzioni avanzate
+   * @param mainFirst - Se mettere l'immagine principale per prima
+   * @returns Array di ProductImage ordinate
+   */
+  getProductImagesOrdered(mainFirst: boolean = true): ProductImage[] {
+    if (!mainFirst) {
+      return this.getProductImagesInOrder();
+    }
+
+    return this.image.sort((a, b) => {
+      if (a.getIsMain() && !b.getIsMain()) return -1;
+      if (!a.getIsMain() && b.getIsMain()) return 1;
+      return a.getOrder() - b.getOrder();
+    });
   }
   //#endregion BUSINESS METHODS
 }

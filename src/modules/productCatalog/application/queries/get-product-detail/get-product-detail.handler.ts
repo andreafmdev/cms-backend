@@ -38,7 +38,7 @@ export class GetProductDetailHandler
     const category = await this.categoryService.findCategoryById(
       product.getCategoryId(),
     );
-    const images = product.getProductImages();
+    const images = product.getProductImagesOrdered();
 
     const productAttributes =
       await this.productService.findProductCategoryAttributes(
@@ -71,6 +71,9 @@ export class GetProductDetailHandler
       images: images.map((image) => ({
         id: image.getId().toString(),
         url: image.getUrl().getValue(),
+        isMain: image.getIsMain(),
+        name: image.getName(),
+        order: image.getOrder(),
       })),
     });
   }

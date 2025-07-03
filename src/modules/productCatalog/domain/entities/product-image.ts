@@ -7,11 +7,15 @@ import { ProductImageDomainError } from '../errors/product-image-errors';
 interface ProductImageProps {
   url: ImageUrl;
   isMain: boolean;
+  name: string;
+  order: number;
 }
 
 type CreateProductImageProps = {
   url: ImageUrl;
   isMain: boolean;
+  name: string;
+  order: number;
 };
 
 type UpdateProductImageProps = Partial<ProductImageProps>;
@@ -20,6 +24,8 @@ interface ReconstituteProps {
   id: ProductImageId;
   url: ImageUrl;
   isMain: boolean;
+  name: string;
+  order: number;
 }
 //#endregion INTERFACES
 
@@ -27,14 +33,24 @@ export class ProductImage extends BaseDomainEntity<ProductImageId> {
   //#region PROPERTIES
   private url: ImageUrl;
   private isMain: boolean;
+  private name: string;
+  private order: number;
   //#endregion PROPERTIES
 
   //#region CONSTRUCTOR
-  private constructor(url: ImageUrl, isMain: boolean, id: ProductImageId) {
+  private constructor(
+    url: ImageUrl,
+    isMain: boolean,
+    id: ProductImageId,
+    name?: string,
+    order?: number,
+  ) {
     super(id);
     ProductImage.validateInvariants({ url, isMain });
     this.url = url;
     this.isMain = isMain;
+    this.name = name || '';
+    this.order = order || 0;
   }
   //#endregion CONSTRUCTOR
 
@@ -46,13 +62,27 @@ export class ProductImage extends BaseDomainEntity<ProductImageId> {
    * @param props.isMain - Whether the product image is the main image
    * @returns The new product image
    */
-  static create(props: CreateProductImageProps): ProductImage {
+  static create(
+    props: CreateProductImageProps & { name?: string; order?: number },
+  ): ProductImage {
     const id = ProductImageId.create();
-    return new ProductImage(props.url, props.isMain, id);
+    return new ProductImage(
+      props.url,
+      props.isMain,
+      id,
+      props.name,
+      props.order,
+    );
   }
 
   static reconstitute(props: ReconstituteProps): ProductImage {
-    return new ProductImage(props.url, props.isMain, props.id);
+    return new ProductImage(
+      props.url,
+      props.isMain,
+      props.id,
+      props.name,
+      props.order,
+    );
   }
   //#endregion FACTORY METHODS
 
@@ -71,6 +101,14 @@ export class ProductImage extends BaseDomainEntity<ProductImageId> {
 
   getIsMain(): boolean {
     return this.isMain;
+  }
+
+  getName(): string {
+    return this.name;
+  }
+
+  getOrder(): number {
+    return this.order;
   }
   //#endregion GETTERS
 
@@ -99,6 +137,18 @@ export class ProductImage extends BaseDomainEntity<ProductImageId> {
   // ✅ NUOVO: Metodo per rimuovere come immagine principale
   unsetAsMain(): void {
     this.isMain = false;
+  }
+
+  updateName(name: string): void {
+    this.name = name;
+  }
+
+  updateOrder(order: number): void {
+    this.order = order;
+  }
+
+  setOrder(order: number): void {
+    this.order = order;
   }
   //#endregion BUSINESS METHODS
 }

@@ -10,6 +10,8 @@ describe('ProductImage', () => {
       const productImage = ProductImage.create({
         url: imageUrl,
         isMain: TEST_CONSTANTS.PRODUCT.IMAGES[0].IS_MAIN,
+        name: TEST_CONSTANTS.PRODUCT.IMAGES[0].NAME,
+        order: TEST_CONSTANTS.PRODUCT.IMAGES[0].ORDER,
       });
       expect(productImage).toBeDefined();
       expect(productImage.getUrl()).toStrictEqual(imageUrl);
@@ -29,6 +31,8 @@ describe('ProductImage', () => {
       const productImage = ProductImage.create({
         url: imageUrl,
         isMain: TEST_CONSTANTS.PRODUCT.IMAGES[0].IS_MAIN,
+        name: TEST_CONSTANTS.PRODUCT.IMAGES[0].NAME,
+        order: TEST_CONSTANTS.PRODUCT.IMAGES[0].ORDER,
       });
       const updatedProductImage = productImage.update({
         url: updatedImageUrl,

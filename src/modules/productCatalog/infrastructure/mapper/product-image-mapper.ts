@@ -17,6 +17,8 @@ export class ProductImageMapper extends BaseMapper<
       id: ProductImageId.create(orm.id),
       url: ImageUrl.create(orm.url),
       isMain: orm.isMain,
+      name: orm.name,
+      order: orm.order,
     });
   }
 
@@ -28,6 +30,8 @@ export class ProductImageMapper extends BaseMapper<
     }
     orm.url = domain.getUrl().getValue();
     orm.isMain = domain.getIsMain();
+    orm.name = domain.getName();
+    orm.order = domain.getOrder();
     return orm;
   }
 }

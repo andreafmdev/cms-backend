@@ -100,10 +100,12 @@ export class ProductService {
         productId,
       }),
     );
-    const productImage = props.image.map((image) =>
+    const productImage = props.image.map((image, index) =>
       ProductImage.create({
         url: ImageUrl.create(image),
-        isMain: false,
+        isMain: index === 0,
+        name: `image-${index + 1}`,
+        order: index + 1,
       }),
     );
     const productAttributesValues = props.attributes.map((attribute) =>
@@ -182,14 +184,35 @@ export class ProductService {
         productId: productId,
       }),
     );
-
-    const productImages = props.images.map((image) =>
-      ProductImage.create({
-        url: ImageUrl.create(image),
-        isMain: false,
-      }),
-    );
-
+    let productImages: ProductImage[] = [];
+    //se ci sono immagini, aggiungo le immagini al prodotto
+    if (props.images && props.images.length > 0) {
+      const existingImages = product.getProductImages();
+      const maxOrder =
+        existingImages.length > 0
+          ? Math.max(...existingImages.map((img) => img.getOrder()))
+          : 0;
+      //se non ci sono immagini, aggiungo l'immagine principale
+      if (existingImages.length === 0) {
+        productImages = [
+          ProductImage.create({
+            url: ImageUrl.create(props.images[0]),
+            isMain: true,
+            name: `image-${1}`,
+            order: 1,
+          }),
+        ];
+      } else {
+        productImages = props.images.map((image, index) =>
+          ProductImage.create({
+            url: ImageUrl.create(image),
+            isMain: false,
+            name: `image-${maxOrder + index + 1}`,
+            order: maxOrder + index + 1,
+          }),
+        );
+      }
+    }
     const productAttributesValues = props.attributes.map((attribute) =>
       ProductCategoryAttributeValue.create({
         productId: productId,
@@ -205,11 +228,13 @@ export class ProductService {
       isAvailable: props.isAvailable,
       isFeatured: props.isFeatured,
       translations: productTranslations,
-      image: productImages.length > 0 ? productImages : [],
       attributesValues:
         productAttributesValues.length > 0 ? productAttributesValues : [],
     });
-
+    //aggiungo le immagini al prodotto
+    productImages.forEach((image) => {
+      product.addImage(image);
+    });
     return await this.productRepository.save(product);
   }
   async searchProductsCount(filters: {

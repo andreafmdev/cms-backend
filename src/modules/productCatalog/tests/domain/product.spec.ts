@@ -26,6 +26,8 @@ describe('Product Domain Entity', () => {
     const image1 = ProductImage.create({
       url: ImageUrl.create(TEST_CONSTANTS.PRODUCT.IMAGES[0].URL),
       isMain: true,
+      name: TEST_CONSTANTS.PRODUCT.IMAGES[0].NAME,
+      order: TEST_CONSTANTS.PRODUCT.IMAGES[0].ORDER,
     });
     const categoryId = CategoryId.create();
     product = Product.create({
@@ -125,6 +127,8 @@ describe('Product Domain Entity', () => {
       const image1 = ProductImage.create({
         url: ImageUrl.create(TEST_CONSTANTS.PRODUCT.IMAGES[0].URL),
         isMain: true,
+        name: TEST_CONSTANTS.PRODUCT.IMAGES[0].NAME,
+        order: TEST_CONSTANTS.PRODUCT.IMAGES[0].ORDER,
       });
       const productId = ProductId.create();
       const categoryId = CategoryId.create();

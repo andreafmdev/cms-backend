@@ -64,6 +64,8 @@ describe('ProductMapper', () => {
         ProductImage.create({
           url: ImageUrl.create(TEST_CONSTANTS.PRODUCT.IMAGES[0].URL),
           isMain: TEST_CONSTANTS.PRODUCT.IMAGES[0].IS_MAIN,
+          name: TEST_CONSTANTS.PRODUCT.IMAGES[0].NAME,
+          order: TEST_CONSTANTS.PRODUCT.IMAGES[0].ORDER,
         }),
       ],
       brandId: brand.getId(),

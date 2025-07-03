@@ -40,6 +40,8 @@ describe('ProductImageMapper', () => {
       const domainEntity = ProductImage.create({
         url: ImageUrl.create(url),
         isMain: isMain,
+        name: TEST_CONSTANTS.PRODUCT.IMAGES[0].NAME,
+        order: TEST_CONSTANTS.PRODUCT.IMAGES[0].ORDER,
       });
 
       const ormEntity = productImageMapper.toPersistence(domainEntity);
@@ -55,6 +57,8 @@ describe('ProductImageMapper', () => {
       const domainEntity = ProductImage.create({
         url: ImageUrl.create(url),
         isMain: isMain,
+        name: TEST_CONSTANTS.PRODUCT.IMAGES[0].NAME,
+        order: TEST_CONSTANTS.PRODUCT.IMAGES[0].ORDER,
       });
       const ormEntity = productImageMapper.toPersistence(domainEntity);
       const domainEntity2 = productImageMapper.toDomain(ormEntity);
